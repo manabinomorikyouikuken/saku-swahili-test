@@ -1,0 +1,1961 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow">
+  <title>サクサクスワヒリ語</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic', sans-serif;
+      background: #eef2f7;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      -webkit-tap-highlight-color: transparent;
+    }
+    header {
+      width: 100%;
+      background: linear-gradient(135deg, #1a2a4a 0%, #24685b 100%);
+      color: white;
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .header-title { font-size: 17px; font-weight: 800; }
+    .header-sub { font-size: 11px; opacity: 0.72; margin-top: 2px; }
+    .stats { display: flex; gap: 16px; font-size: 12px; }
+    .stat-item { text-align: center; }
+    .stat-num { display: block; font-size: 20px; font-weight: 800; line-height: 1; }
+    .stat-label { font-size: 10px; opacity: 0.72; margin-top: 2px; }
+    .main {
+      width: 100%;
+      max-width: 460px;
+      padding: 16px 12px calc(86px + env(safe-area-inset-bottom));
+    }
+    #learn-view {
+      min-height: calc(100svh - 76px);
+      display: flex;
+      flex-direction: column;
+      touch-action: pan-y;
+    }
+    [hidden] { display: none !important; }
+    .progress-wrap { margin-bottom: 18px; }
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      color: #64748b;
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+    .progress-bar {
+      height: 7px;
+      border-radius: 8px;
+      background: #d0d8e4;
+      overflow: hidden;
+    }
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      border-radius: 8px;
+      background: linear-gradient(90deg, #15803d, #38bdf8);
+      transition: width 0.28s ease;
+    }
+    #card-area {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding-top: clamp(20px, 8vh, 72px);
+    }
+    #learn-view.test-mode #card-area {
+      justify-content: flex-start;
+      padding-top: 10px;
+    }
+    .card-prompt {
+      width: min(92%, 420px);
+      min-height: 18px;
+      margin: 0 auto 8px;
+      color: #94a3b8;
+      font-size: 12px;
+      font-weight: 800;
+      text-align: center;
+    }
+    .card-container {
+      perspective: 1200px;
+      width: min(92%, 420px);
+      height: 292px;
+      margin: 0 auto 10px;
+      cursor: pointer;
+      touch-action: pan-y;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .card {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .card.flipped { transform: rotateY(180deg); }
+    .card-face {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      border-radius: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 22px 20px;
+      text-align: center;
+    }
+    .card-front {
+      background: white;
+      box-shadow: 0 6px 30px rgba(15,23,42,0.1);
+    }
+    .sw-text {
+      color: #1a2a4a;
+      font-size: clamp(30px, 8vw, 40px);
+      font-weight: 900;
+      line-height: 1.16;
+      overflow-wrap: anywhere;
+    }
+    .front-badges {
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+    .noun-class-front {
+      min-height: 24px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #64748b;
+      font-size: 11px;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: 0;
+    }
+    .card-back {
+      background: linear-gradient(145deg, #1e3a5f, #24685b);
+      color: white;
+      transform: rotateY(180deg);
+      box-shadow: 0 6px 30px rgba(15,23,42,0.24);
+    }
+    .meaning-text {
+      font-size: 24px;
+      font-weight: 900;
+      line-height: 1.4;
+      margin-bottom: 12px;
+    }
+    .example-text {
+      width: 100%;
+      max-width: 330px;
+      margin-bottom: 12px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.94);
+      font-size: 14px;
+      font-weight: 800;
+      line-height: 1.5;
+      white-space: pre-line;
+    }
+    .grammar-note {
+      margin: -4px 0 12px;
+      color: rgba(255,255,255,0.78);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0;
+    }
+    .usage-text {
+      color: rgba(255,255,255,0.72);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+    .card-back.compact-back {
+      padding: 18px 18px;
+    }
+    .card-back.compact-back .meaning-text {
+      font-size: 22px;
+      line-height: 1.32;
+      margin-bottom: 8px;
+    }
+    .card-back.compact-back .example-text {
+      font-size: 13px;
+      line-height: 1.36;
+      padding: 8px 10px;
+      margin-bottom: 8px;
+    }
+    .card-back.compact-back .grammar-note {
+      font-size: 10px;
+      margin: -2px 0 8px;
+    }
+    .card-back.compact-back .usage-text {
+      font-size: 12px;
+      line-height: 1.35;
+    }
+    .card-back.compact-back .quality-row {
+      margin-top: 7px;
+    }
+    .card-back.dense-back {
+      padding: 15px 16px;
+    }
+    .card-back.dense-back .meaning-text {
+      font-size: 20px;
+      line-height: 1.25;
+      margin-bottom: 6px;
+    }
+    .card-back.dense-back .example-text {
+      font-size: 12px;
+      line-height: 1.28;
+      padding: 7px 9px;
+      margin-bottom: 7px;
+    }
+    .card-back.dense-back .grammar-note {
+      font-size: 9.5px;
+      line-height: 1.25;
+      margin: -1px 0 7px;
+    }
+    .card-back.dense-back .usage-text {
+      font-size: 11px;
+      line-height: 1.25;
+    }
+    .card-back.dense-back .quality-row {
+      margin-top: 6px;
+    }
+    .quality-row {
+      margin-top: 10px;
+      display: flex;
+      justify-content: center;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+    .pos-badge,
+    .quality-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 24px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.2);
+      font-size: 11px;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: 0;
+      color: white;
+      background: rgba(255,255,255,0.12);
+    }
+    .pos-badge {
+      border-color: transparent;
+      box-shadow: 0 1px 5px rgba(15,23,42,0.14);
+    }
+    .pos-noun { background: #0f766e; color: #ecfdf5; }
+    .pos-verb { background: #1d4ed8; color: #eff6ff; }
+    .pos-adjective { background: #c2410c; color: #fff7ed; }
+    .pos-adverb { background: #6d28d9; color: #f5f3ff; }
+    .pos-number { background: #be123c; color: #fff1f2; }
+    .pos-expression { background: #475569; color: #f8fafc; }
+    .quality-a {
+      border-color: rgba(134,239,172,0.55);
+      background: rgba(22,163,74,0.22);
+      color: #dcfce7;
+    }
+    .quality-b {
+      border-color: rgba(253,224,71,0.56);
+      background: rgba(202,138,4,0.22);
+      color: #fef9c3;
+    }
+    .quality-c {
+      border-color: rgba(251,146,60,0.62);
+      background: rgba(234,88,12,0.28);
+      color: #ffedd5;
+    }
+    .swipe-msg {
+      text-align: center;
+      color: #94a3b8;
+      font-size: 12px;
+      margin-top: 6px;
+    }
+    .test-panel {
+      display: none;
+      width: min(92%, 420px);
+      margin: 0 auto calc(64px + env(safe-area-inset-bottom));
+    }
+    .test-word-card {
+      min-height: 150px;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 6px 30px rgba(15,23,42,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 18px;
+      text-align: center;
+    }
+    .test-word-card.wrong-cue { animation: wrongCue 0.34s ease-in-out; }
+    @keyframes wrongCue {
+      0% { transform: translateX(0); box-shadow: 0 6px 30px rgba(15,23,42,0.1); }
+      18% { transform: translateX(-6px); box-shadow: 0 6px 30px rgba(220,38,38,0.22); }
+      36% { transform: translateX(6px); }
+      54% { transform: translateX(-5px); }
+      72% { transform: translateX(4px); }
+      100% { transform: translateX(0); box-shadow: 0 6px 30px rgba(15,23,42,0.1); }
+    }
+    .test-word-text {
+      color: #1a2a4a;
+      font-size: clamp(31px, 9vw, 42px);
+      font-weight: 900;
+      line-height: 1.12;
+      overflow-wrap: anywhere;
+    }
+    .test-choice-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 9px;
+      margin-top: 12px;
+    }
+    .test-choice-card {
+      min-height: 54px;
+      border: 1px solid #d8e1ee;
+      background: white;
+      color: #334155;
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-size: 14px;
+      font-weight: 800;
+      line-height: 1.35;
+      text-align: left;
+      cursor: pointer;
+      touch-action: manipulation;
+      box-shadow: 0 3px 12px rgba(15,23,42,0.05);
+    }
+    .test-choice-card:disabled { cursor: default; opacity: 0.82; }
+    .test-choice-card.correct { border-color: #16a34a; background: #ecfdf5; color: #166534; }
+    .test-choice-card.wrong { border-color: #ef4444; background: #fef2f2; color: #991b1b; }
+    .test-feedback {
+      min-height: 26px;
+      margin-top: 10px;
+      color: #475569;
+      font-size: 13px;
+      font-weight: 800;
+      text-align: center;
+      line-height: 1.35;
+    }
+    .test-next-btn {
+      display: none;
+      width: 100%;
+      margin-top: 8px;
+      border: none;
+      background: #15803d;
+      color: white;
+      border-radius: 13px;
+      padding: 12px 16px;
+      font-size: 14px;
+      font-weight: 900;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+    .session-complete {
+      display: none;
+      width: min(92%, 420px);
+      margin: 0 auto calc(64px + env(safe-area-inset-bottom));
+      padding: 24px 18px;
+      background: white;
+      border-radius: 18px;
+      box-shadow: 0 6px 30px rgba(15,23,42,0.1);
+      text-align: center;
+    }
+    .complete-icon { font-size: 38px; margin-bottom: 8px; }
+    .complete-title { color: #1a2a4a; font-size: 19px; font-weight: 900; margin-bottom: 6px; }
+    .complete-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin: 14px 0 16px;
+    }
+    .complete-stat-num { display: block; color: #15803d; font-size: 24px; font-weight: 900; line-height: 1; }
+    .complete-stat-label { color: #94a3b8; font-size: 10px; margin-top: 3px; }
+    .complete-msg { color: #64748b; font-size: 12.5px; line-height: 1.55; margin-bottom: 14px; white-space: pre-line; }
+    .restart-btn {
+      border: none;
+      background: linear-gradient(135deg, #15803d, #38bdf8);
+      color: white;
+      border-radius: 12px;
+      padding: 12px 24px;
+      font-size: 14px;
+      font-weight: 900;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+    .learn-bottom-bar {
+      position: fixed;
+      left: 50%;
+      bottom: calc(12px + env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      z-index: 10;
+      width: min(92vw, 420px);
+      display: grid;
+      grid-template-columns: 0.8fr 1.2fr 0.8fr;
+      gap: 8px;
+      pointer-events: none;
+    }
+    .nav-btn,
+    .back-btn {
+      pointer-events: auto;
+      border: 1px solid #1a2a4a;
+      background: #1a2a4a;
+      color: white;
+      border-radius: 999px;
+      padding: 11px 8px;
+      font-size: 12px;
+      font-weight: 900;
+      cursor: pointer;
+      touch-action: manipulation;
+      box-shadow: 0 10px 28px rgba(15,23,42,0.22);
+      white-space: nowrap;
+    }
+    .nav-btn.test { background: #15803d; border-color: #15803d; }
+    .nav-btn.active { outline: 2px solid rgba(255,255,255,0.9); outline-offset: -4px; }
+    .settings-view { padding-top: 14px; }
+    .settings-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .settings-title { color: #1a2a4a; font-size: 20px; font-weight: 900; line-height: 1.25; }
+    .settings-lead { color: #64748b; font-size: 12px; line-height: 1.55; margin-top: 4px; }
+    .back-btn {
+      flex: 0 0 auto;
+      box-shadow: none;
+      border-radius: 999px;
+      padding: 8px 14px;
+    }
+    .panel {
+      background: rgba(255,255,255,0.78);
+      border: 1px solid #d8e1ee;
+      border-radius: 16px;
+      padding: 12px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 18px rgba(15,23,42,0.06);
+    }
+    .section-title {
+      color: #334155;
+      font-size: 13px;
+      font-weight: 900;
+      margin-bottom: 9px;
+    }
+    .option-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+    .option-grid.three { grid-template-columns: repeat(3, 1fr); }
+    .option-grid.four { grid-template-columns: repeat(4, 1fr); }
+    .option-btn {
+      border: 1px solid #cbd5e1;
+      background: white;
+      color: #334155;
+      border-radius: 12px;
+      padding: 10px 6px;
+      font-size: 12px;
+      font-weight: 900;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+    .option-btn span {
+      display: block;
+      color: #94a3b8;
+      font-size: 9px;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+    .option-btn.active { background: #1a2a4a; border-color: #1a2a4a; color: white; }
+    .option-btn.active span { color: rgba(255,255,255,0.72); }
+    .note { margin-top: 8px; color: #64748b; font-size: 11px; line-height: 1.5; text-align: center; }
+    @media (max-height: 740px) {
+      .main { padding-top: 12px; }
+      .card-container { height: 258px; margin-bottom: 8px; }
+      .card-face { padding: 18px; }
+      .test-word-card { min-height: 130px; }
+      .test-choice-card { min-height: 48px; font-size: 13px; padding: 10px 12px; }
+      .session-complete { padding: 18px 14px; }
+    }
+    @media (max-width: 390px) {
+      header { padding: 12px 14px; }
+      .stats { gap: 9px; }
+      .stat-num { font-size: 18px; }
+      .option-grid.four { grid-template-columns: repeat(2, 1fr); }
+      .nav-btn { font-size: 11px; }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="header-title">サクサクスワヒリ語</div>
+    <div class="header-sub">友人テスト版 / 318カード・ケニア派遣前プロトタイプ</div>
+  </div>
+  <div class="stats">
+    <div class="stat-item">
+      <span class="stat-num" id="stat-today">0</span>
+      <div class="stat-label">今回</div>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num" id="stat-mastered">0</span>
+      <div class="stat-label">習得</div>
+    </div>
+  </div>
+</header>
+
+<main id="learn-view" class="main">
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span id="progress-text">0 / 0</span>
+      <span id="scope-text">全カード / 318カード</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+  </div>
+
+  <div id="card-area">
+    <div class="card-prompt" id="study-prompt">タップすると日本語が出るよ</div>
+    <div class="card-container" id="card-container" role="button" tabindex="0" aria-label="スワヒリ語カードを反転">
+      <div class="card" id="card">
+        <div class="card-face card-front">
+          <div class="sw-text" id="sw-text">-</div>
+          <div class="front-badges" id="front-badges">
+            <span class="pos-badge pos-noun" id="pos-front">名詞</span>
+            <span class="noun-class-front" id="noun-class-front" hidden></span>
+          </div>
+        </div>
+        <div class="card-face card-back">
+          <div class="meaning-text" id="meaning-text">-</div>
+          <div class="grammar-note" id="grammar-note" hidden></div>
+          <div class="example-text" id="example-text" hidden></div>
+          <div class="usage-text" id="usage-text">-</div>
+          <div class="quality-row">
+            <span class="pos-badge pos-noun" id="pos-back">名詞</span>
+            <span class="quality-badge quality-a" id="quality-badge">A 実用</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="test-panel" id="test-panel" aria-live="polite">
+      <div class="test-word-card"><div class="test-word-text" id="test-word-text">-</div></div>
+      <div class="test-choice-grid" id="test-choice-grid"></div>
+      <div class="test-feedback" id="test-feedback"></div>
+      <button class="test-next-btn" id="test-next-btn" type="button" onclick="showNextTestQuestion()">次へ</button>
+    </div>
+
+    <div id="session-complete" class="session-complete">
+      <div class="complete-icon" id="complete-icon">◎</div>
+      <div class="complete-title" id="complete-title">完了！</div>
+      <div class="complete-stats">
+        <div class="complete-stat">
+          <span class="complete-stat-num" id="cs-reviewed">0</span>
+          <div class="complete-stat-label" id="cs-reviewed-label">出題</div>
+        </div>
+        <div class="complete-stat">
+          <span class="complete-stat-num" id="cs-mastered">0</span>
+          <div class="complete-stat-label" id="cs-mastered-label">習得</div>
+        </div>
+        <div class="complete-stat">
+          <span class="complete-stat-num" id="cs-due">0</span>
+          <div class="complete-stat-label" id="cs-due-label">候補</div>
+        </div>
+      </div>
+      <div class="complete-msg" id="complete-msg"></div>
+      <button class="restart-btn" id="restart-btn" type="button" onclick="restartCurrentMode()">もう一周する</button>
+    </div>
+
+    <div class="swipe-msg" id="swipe-msg"></div>
+  </div>
+
+  <div class="learn-bottom-bar">
+    <button class="nav-btn active" id="learn-mode-btn" type="button" onclick="startSession()">学習</button>
+    <button class="nav-btn test" id="test-mode-btn" type="button" onclick="startTestSession()">サクサクテスト</button>
+    <button class="nav-btn" type="button" onclick="showSettingsView()">設定</button>
+  </div>
+</main>
+
+<section id="settings-view" class="main settings-view" hidden>
+  <div class="settings-head">
+    <div>
+      <div class="settings-title">設定</div>
+      <div class="settings-lead">品詞カテゴリ、文法ヒント、テストの選択肢数を変えられます。</div>
+    </div>
+    <button class="back-btn" type="button" onclick="showLearnView()">戻る</button>
+  </div>
+
+  <div class="panel">
+    <div class="section-title">カテゴリを選ぶ</div>
+    <div class="option-grid" id="category-buttons"></div>
+    <div class="note">表現、数、記念日や文化系のカードは「その他」に入ります。</div>
+  </div>
+
+  <div class="panel">
+    <div class="section-title">表示順</div>
+    <div class="option-grid three">
+      <button class="option-btn display-order-btn active" type="button" data-display-order="random" onclick="setDisplayOrder('random')">ランダム<span>標準</span></button>
+      <button class="option-btn display-order-btn" type="button" data-display-order="asc" onclick="setDisplayOrder('asc')">A→Z<span>確認用</span></button>
+      <button class="option-btn display-order-btn" type="button" data-display-order="desc" onclick="setDisplayOrder('desc')">Z→A<span>逆順</span></button>
+    </div>
+    <div class="note">学習モードだけに反映します。サクサクテストはランダム固定です。</div>
+  </div>
+
+  <div class="panel">
+    <div class="section-title">カード表面の文法ヒント</div>
+    <div class="option-grid">
+      <button class="option-btn front-grammar-btn active" type="button" data-front-grammar="show" onclick="setFrontGrammarVisibility(true)">表示<span>品詞・名詞クラス</span></button>
+      <button class="option-btn front-grammar-btn" type="button" data-front-grammar="hide" onclick="setFrontGrammarVisibility(false)">非表示<span>思い出す練習</span></button>
+    </div>
+    <div class="note">慣れてきたら非表示にすると、品詞や名詞クラスを思い出す練習になります。</div>
+  </div>
+
+  <div class="panel">
+    <div class="section-title">サクサクテスト</div>
+    <div class="option-grid three">
+      <button class="option-btn test-choice-count-btn" type="button" data-test-choices="2" onclick="setTestChoiceCount(2)">2択</button>
+      <button class="option-btn test-choice-count-btn" type="button" data-test-choices="3" onclick="setTestChoiceCount(3)">3択</button>
+      <button class="option-btn test-choice-count-btn active" type="button" data-test-choices="4" onclick="setTestChoiceCount(4)">4択</button>
+    </div>
+    <div class="note">不正解時はカードが短く揺れます。対応端末では振動も試みます。</div>
+  </div>
+
+  <div class="panel">
+    <div class="section-title">プロトタイプメモ</div>
+    <div class="note">ケニア派遣隊員向けの試作です。実運用前に、現地経験者またはスワヒリ語講師による表現確認を入れてください。</div>
+  </div>
+
+  <div style="display:flex; justify-content:center; margin-top:14px;">
+    <button class="back-btn" type="button" onclick="showLearnView()">戻る</button>
+  </div>
+</section>
+
+<script>
+const PHRASES = [
+  { id:'daily_hello', cat:'daily', sw:'habari', read:'ハバリ', jp:'様子：知らせ', usage:'日常会話 / あいさつ', type:'word', example:'例: Habari yako?\nお元気ですか' },
+  { id:'daily_fine', cat:'daily', sw:'nzuri', read:'ンズリ', jp:'よい：元気', usage:'日常会話 / 返事', type:'word', example:'例: Nzuri, asante.\n元気です、ありがとう' },
+  { id:'daily_please', cat:'daily', sw:'tafadhali', read:'タファダリ', jp:'お願いします', usage:'日常会話 / 丁寧に頼む' },
+  { id:'daily_thanks', cat:'daily', sw:'asante', read:'アサンテ', jp:'ありがとう', usage:'日常会話 / 感謝', type:'word', example:'例: Asante sana.\nどうもありがとうございます' },
+  { id:'daily_excuse', cat:'daily', sw:'samahani', read:'サマハニ', jp:'すみません', usage:'日常会話 / 呼びかけ・謝罪' },
+  { id:'daily_yes', cat:'daily', sw:'ndiyo', read:'ンディヨ', jp:'はい', usage:'日常会話 / 基本返答' },
+  { id:'daily_no', cat:'daily', sw:'hapana', read:'ハパナ', jp:'いいえ', usage:'日常会話 / 基本返答' },
+  { id:'daily_cut_into_pieces', cat:'daily', sw:'katakata', read:'カタカタ', jp:'細かく切って', usage:'日常会話 / 口語表現', example:'例: Katakata vitunguu.\n玉ねぎを細かく切って' },
+  { id:'daily_quickly_chapchap', cat:'daily', sw:'chapchap', read:'チャプチャプ', jp:'早く：さっと', usage:'日常会話 / 口語表現', example:'例: Fanya chapchap.\nさっとやって' },
+  { id:'daily_slowly_polepole', cat:'daily', sw:'polepole', read:'ポレポレ', jp:'ゆっくり', usage:'日常会話 / 反復表現', example:'例: Tembea polepole.\nゆっくり歩いて' },
+  { id:'daily_quickly_haraka_haraka', cat:'daily', sw:'haraka haraka', read:'ハラカ ハラカ', jp:'急いで：早く早く', usage:'日常会話 / 反復表現', type:'expression', example:'例: Njoo haraka haraka.\n急いで来て' },
+  { id:'daily_quietly_kimya_kimya', cat:'daily', sw:'kimya kimya', read:'キミャ キミャ', jp:'静かに：こっそり', usage:'日常会話 / 反復表現', type:'expression', example:'例: Alitoka kimya kimya.\n彼はこっそり出て行きました' },
+  { id:'daily_little_by_little', cat:'daily', sw:'kidogo kidogo', read:'キドゴ キドゴ', jp:'少しずつ', usage:'日常会話 / 反復表現', type:'expression', example:'例: Ninajifunza Kiswahili kidogo kidogo.\n私は少しずつスワヒリ語を学んでいます' },
+  { id:'daily_eaten', cat:'daily', sw:'kula', read:'クラ', jp:'食べる', usage:'日常会話 / 食事', type:'word', note:'短い動詞のため不定形で表示', example:'例: Umeshakula?\nもう食べましたか？' },
+  { id:'daily_not_yet_eaten', cat:'daily', sw:'bado', read:'バド', jp:'まだ', usage:'日常会話 / 食事の返事', type:'word', example:'例: Hapana, bado sijala.\nいいえ、まだ食べていません' },
+  { id:'daily_guest_came', cat:'daily', sw:'mgeni', read:'ムゲニ', jp:'お客さん：ゲスト', usage:'日常会話 / 来客', type:'word', example:'例: Mgeni kaja.\nお客さんが来ました' },
+  { id:'daily_good_place', cat:'daily', sw:'mahali', read:'マハリ', jp:'場所', usage:'日常会話 / 感想', type:'word', example:'例: Hapa ni mahali pazuri.\nここは素晴らしいところです' },
+  { id:'daily_dream_encouragement', cat:'daily', sw:'ndoto', read:'ンドト', jp:'夢', usage:'日常会話 / 励まし', type:'word', example:'例: Ndoto yako itatimia usipokata tamaa.\n諦めなければ、あなたの夢は実現します' },
+  { id:'daily_we_are_together', cat:'daily', sw:'pamoja', read:'パモジャ', jp:'一緒に：ともに', usage:'日常会話 / 励まし', type:'word', example:'例: Tuko pamoja.\n私たちは一緒です、仲間です' },
+  { id:'daily_tanzania_nane_nane', cat:'daily', sw:'Nane Nane', read:'ナネ ナネ', jp:'農業祭：8月8日', usage:'タンザニア / 文化', type:'expression', example:'例: Nane Nane ni siku ya wakulima.\nナネナネは農業の日です' },
+  { id:'daily_kenya_independence_day', cat:'daily', sw:'uhuru', read:'ウフル', jp:'自由：独立', usage:'ケニア / 文化', type:'word', example:'例: Kenya ilipata uhuru mwaka 1963.\nケニアは1963年に独立しました' },
+  { id:'daily_number_one', cat:'number', sw:'moja', read:'モジャ', jp:'1：一つ', usage:'数 / 読み方' },
+  { id:'daily_number_two', cat:'number', sw:'mbili', read:'ムビリ', jp:'2：二つ', usage:'数 / 読み方' },
+  { id:'daily_number_three', cat:'number', sw:'tatu', read:'タトゥ', jp:'3：三つ', usage:'数 / 読み方' },
+  { id:'daily_number_four', cat:'number', sw:'nne', read:'ンネ', jp:'4：四つ', usage:'数 / 読み方' },
+  { id:'daily_number_five', cat:'number', sw:'tano', read:'タノ', jp:'5：五つ', usage:'数 / 読み方' },
+  { id:'daily_number_six', cat:'number', sw:'sita', read:'シタ', jp:'6：六つ', usage:'数 / 読み方' },
+  { id:'daily_number_seven', cat:'number', sw:'saba', read:'サバ', jp:'7：七つ', usage:'数 / 読み方' },
+  { id:'daily_number_eight', cat:'number', sw:'nane', read:'ナネ', jp:'8：八つ', usage:'数 / 読み方' },
+  { id:'daily_number_nine', cat:'number', sw:'tisa', read:'ティサ', jp:'9：九つ', usage:'数 / 読み方' },
+  { id:'daily_number_ten', cat:'number', sw:'kumi', read:'クミ', jp:'10：十', usage:'数 / 読み方' },
+  { id:'daily_number_twenty', cat:'number', sw:'ishirini', read:'イシリニ', jp:'20：二十', usage:'数 / 読み方' },
+  { id:'daily_number_thirty', cat:'number', sw:'thelathini', read:'セラシニ', jp:'30：三十', usage:'数 / 読み方' },
+  { id:'daily_number_forty', cat:'number', sw:'arobaini', read:'アロバイニ', jp:'40：四十', usage:'数 / 読み方' },
+  { id:'daily_number_fifty', cat:'number', sw:'hamsini', read:'ハムシニ', jp:'50：五十', usage:'数 / 読み方' },
+  { id:'daily_number_sixty', cat:'number', sw:'sitini', read:'シティニ', jp:'60：六十', usage:'数 / 読み方', example:'例: Babu yangu ana miaka sitini.\n祖父は60歳です' },
+  { id:'daily_number_seventy', cat:'number', sw:'sabini', read:'サビニ', jp:'70：七十', usage:'数 / 読み方' },
+  { id:'daily_number_eighty', cat:'number', sw:'themanini', read:'セマニニ', jp:'80：八十', usage:'数 / 読み方' },
+  { id:'daily_number_ninety', cat:'number', sw:'tisini', read:'ティシニ', jp:'90：九十', usage:'数 / 読み方' },
+  { id:'daily_number_one_hundred', cat:'number', sw:'mia moja', read:'ミア モジャ', jp:'100：百', usage:'数 / 読み方', type:'expression' },
+  { id:'daily_number_one_thousand', cat:'number', sw:'elfu', read:'エルフ', jp:'1000：千', usage:'数 / 読み方', note:'elfu moja も標準的な数表現' },
+  { id:'daily_number_ten_thousand', cat:'number', sw:'elfu kumi', read:'エルフ クミ', jp:'10000', usage:'数 / 読み方', type:'expression' },
+  { id:'daily_date_today', cat:'daily', sw:'leo', read:'レオ', jp:'今日', usage:'時間 / 日付' },
+  { id:'daily_date_yesterday', cat:'daily', sw:'jana', read:'ジャナ', jp:'昨日', usage:'時間 / 日付' },
+  { id:'daily_date_tomorrow', cat:'daily', sw:'kesho', read:'ケショ', jp:'明日', usage:'時間 / 日付' },
+  { id:'daily_date_day_after_tomorrow', cat:'daily', sw:'kesho kutwa', read:'ケショ クトゥワ', jp:'明後日：今日から2日後', usage:'時間 / 日付', type:'expression' },
+  { id:'daily_date_three_days_later', cat:'daily', sw:'mtondo', read:'ムトンド', jp:'明々後日：今日から3日後', usage:'時間 / 日付' },
+  { id:'daily_date_day_before_yesterday', cat:'daily', sw:'juzi', read:'ジュジ', jp:'一昨日', usage:'時間 / 日付' },
+  { id:'daily_date_tarehe', cat:'daily', sw:'tarehe', read:'タレヘ', jp:'日付：日にち', usage:'時間 / 日付', type:'word', note:'単複同じ', example:'例: Leo ni tarehe ngapi?\n今日は何日ですか' },
+  { id:'daily_month_word', cat:'daily', sw:'mwezi', read:'ムウェジ', jp:'月：1か月', usage:'時間 / 月', type:'word', note:'複数 miezi', example:'例: Nitaenda Kenya mwezi ujao.\n来月ケニアに行きます' },
+  { id:'daily_every_word', cat:'daily', sw:'kila', read:'キラ', jp:'毎〜：それぞれの', usage:'時間 / 頻度', type:'word', example:'例: Ninasoma Kiswahili kila siku.\n毎日スワヒリ語を勉強します' },
+  { id:'daily_time_word', cat:'daily', sw:'wakati', read:'ワカティ', jp:'時間：時、時期', usage:'時間 / 一般', type:'word', note:'複数 nyakati', example:'例: Wakati ni muhimu.\n時間は大切です' },
+  { id:'daily_tired_verb', cat:'daily', sw:'choka', read:'クチョカ', jp:'疲れる', usage:'日常会話 / 体調', type:'word', infinitive:'kuchoka', example:'例: Nimechoka leo.\n今日は疲れました' },
+  { id:'daily_start_verb', cat:'daily', sw:'anza', read:'クアンザ', jp:'始める：始まる', usage:'日常会話 / 動作', type:'word', infinitive:'kuanza', example:'例: Tutaanza mkutano saa moja.\n7時に会議を始めます' },
+  { id:'daily_finish_verb', cat:'daily', sw:'maliza', read:'クマリザ', jp:'終える：終わらせる', usage:'日常会話 / 動作', type:'word', infinitive:'kumaliza', example:'例: Nitamaliza kazi kabla ya jioni.\n夕方までに仕事を終えます' },
+  { id:'daily_rest_verb', cat:'daily', sw:'pumzika', read:'クプムジカ', jp:'休む：休憩する', usage:'日常会話 / 動作', type:'word', infinitive:'kupumzika', example:'例: Nitapumzika kidogo baada ya kazi.\n仕事の後で少し休みます' },
+  { id:'daily_write_verb', cat:'daily', sw:'andika', read:'クアンディカ', jp:'書く', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kuandika', pos:'verb', example:'例: Ninaandika ujumbe mfupi.\n短いメッセージを書いています' },
+  { id:'daily_read_study_verb', cat:'daily', sw:'soma', read:'クソマ', jp:'読む：勉強する', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kusoma', pos:'verb', example:'例: Ninasoma Kiswahili kila siku.\n毎日スワヒリ語を勉強しています' },
+  { id:'daily_live_verb', cat:'daily', sw:'ishi', read:'クイシ', jp:'住む：生きる', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kuishi', pos:'verb', example:'例: Ninaishi karibu na shule.\n学校の近くに住んでいます' },
+  { id:'daily_use_verb', cat:'daily', sw:'tumia', read:'クトゥミア', jp:'使う', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kutumia', pos:'verb', example:'例: Ninatumia simu yangu kusoma.\n勉強に自分の電話を使っています' },
+  { id:'daily_wake_up_verb', cat:'daily', sw:'amka', read:'クアムカ', jp:'起きる：目覚める', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kuamka', pos:'verb', example:'例: Ninaamka mapema kila siku.\n毎日早く起きます' },
+  { id:'daily_cook_verb', cat:'daily', sw:'pika', read:'クピカ', jp:'料理する', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kupika', pos:'verb', example:'例: Ninapika wali jioni.\n夕方にご飯を炊きます' },
+  { id:'daily_do_make_verb', cat:'daily', sw:'fanya', read:'クファニャ', jp:'する：行う', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kufanya', pos:'verb', example:'例: Unafanya nini leo?\n今日は何をしていますか' },
+  { id:'daily_relax_verb', cat:'daily', sw:'starehe', read:'クスタレヘ', jp:'くつろぐ：楽しむ', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kustarehe', pos:'verb', note:'starehe = くつろぎ、楽しみ', example:'例: Nitastarehe baada ya kazi.\n仕事の後でくつろぎます' },
+  { id:'daily_forget_verb', cat:'daily', sw:'sahau', read:'クサハウ', jp:'忘れる', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kusahau', pos:'verb', note:'sahau は命令形にもなる', example:'例: Nilisahau jina lake.\n彼、彼女の名前を忘れました' },
+  { id:'daily_understand_verb', cat:'daily', sw:'elewa', read:'クエレワ', jp:'理解する：わかる', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kuelewa', pos:'verb', example:'例: Ninaelewa kidogo.\n少しわかります' },
+  { id:'daily_be_become_verb', cat:'daily', sw:'kuwa', read:'クワ', jp:'〜である：〜になる', usage:'日常会話 / 頻出動詞', type:'word', pos:'verb', note:'短い動詞のため不定形で表示', example:'例: Nataka kuwa mwalimu.\n先生になりたいです' },
+  { id:'daily_like_love_verb', cat:'daily', sw:'penda', read:'クペンダ', jp:'好む：愛する', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kupenda', pos:'verb', example:'例: Ninapenda chai ya Kenya.\nケニアのチャイが好きです' },
+  { id:'daily_want_verb', cat:'daily', sw:'taka', read:'クタカ', jp:'望む：〜したい', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kutaka', pos:'verb', example:'例: Nataka maji baridi.\n冷たい水が欲しいです' },
+  { id:'daily_need_verb', cat:'daily', sw:'hitaji', read:'クヒタジ', jp:'必要とする', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kuhitaji', pos:'verb', example:'例: Ninahitaji msaada kidogo.\n少し助けが必要です' },
+  { id:'daily_know_verb', cat:'daily', sw:'kujua', read:'クジュア', jp:'知る：わかる', usage:'日常会話 / 頻出動詞', type:'word', pos:'verb', note:'語幹 jua / 太陽の jua と同形になるため不定形で表示', example:'例: Sijui bei yake.\nその値段はわかりません' },
+  { id:'daily_see_verb', cat:'daily', sw:'ona', read:'クオナ', jp:'見る：見える', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kuona', pos:'verb', example:'例: Naona mlima leo.\n今日は山が見えます' },
+  { id:'daily_come_verb', cat:'daily', sw:'kuja', read:'クジャ', jp:'来る', usage:'日常会話 / 頻出動詞', type:'word', pos:'verb', note:'短い動詞のため不定形で表示', example:'例: Nitakuja kesho.\n明日来ます' },
+  { id:'daily_return_verb', cat:'daily', sw:'rudi', read:'クルディ', jp:'戻る：帰る', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kurudi', pos:'verb', example:'例: Nitarudi jioni.\n夕方に戻ります' },
+  { id:'daily_bring_verb', cat:'daily', sw:'leta', read:'クレタ', jp:'持って来る', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kuleta', pos:'verb', example:'例: Tafadhali leta maji.\n水を持って来てください' },
+  { id:'daily_take_to_verb', cat:'daily', sw:'peleka', read:'クペレカ', jp:'持って行く：連れて行く', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kupeleka', pos:'verb', example:'例: Nipeleke stendi, tafadhali.\n乗り場まで連れて行ってください' },
+  { id:'daily_take_hold_verb', cat:'daily', sw:'chukua', read:'クチュクア', jp:'取る：持っていく', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kuchukua', pos:'verb', example:'例: Nitachukua begi langu.\n自分のかばんを持っていきます' },
+  { id:'daily_put_keep_verb', cat:'daily', sw:'weka', read:'クウェカ', jp:'置く：入れる', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kuweka', pos:'verb', example:'例: Weka kitabu mezani.\n本を机に置いてください' },
+  { id:'daily_open_verb', cat:'daily', sw:'fungua', read:'クフングア', jp:'開ける：開く', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kufungua', pos:'verb', example:'例: Tafadhali fungua mlango.\nドアを開けてください' },
+  { id:'daily_close_verb', cat:'daily', sw:'funga', read:'クフンガ', jp:'閉める：締める', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kufunga', pos:'verb', example:'例: Funga dirisha, tafadhali.\n窓を閉めてください' },
+  { id:'daily_clean_verb', cat:'daily', sw:'safisha', read:'クサフィシャ', jp:'掃除する：きれいにする', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kusafisha', pos:'verb', example:'例: Nitasafisha chumba leo.\n今日は部屋を掃除します' },
+  { id:'daily_help_verb', cat:'daily', sw:'saidia', read:'クサイディア', jp:'助ける：手伝う', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kusaidia', pos:'verb', example:'例: Tafadhali nisaidie kidogo.\n少し手伝ってください' },
+  { id:'daily_ask_verb', cat:'daily', sw:'uliza', read:'クウリザ', jp:'尋ねる：質問する', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kuuliza', pos:'verb', example:'例: Naweza kuuliza swali?\n質問してもいいですか' },
+  { id:'daily_answer_verb', cat:'daily', sw:'jibu', read:'クジブ', jp:'答える：返事する', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kujibu', pos:'verb', example:'例: Tafadhali jibu swali hili.\nこの質問に答えてください' },
+  { id:'daily_wait_verb', cat:'daily', sw:'subiri', read:'クスビリ', jp:'待つ', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kusubiri', pos:'verb', example:'例: Nitasubiri hapa.\nここで待ちます' },
+  { id:'daily_walk_verb', cat:'daily', sw:'tembea', read:'クテンベア', jp:'歩く：散歩する', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kutembea', pos:'verb', example:'例: Ninatembea mpaka sokoni.\n市場まで歩きます' },
+  { id:'daily_run_verb', cat:'daily', sw:'kimbia', read:'クキンビア', jp:'走る：逃げる', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kukimbia', pos:'verb', example:'例: Watoto wanakimbia uwanjani.\n子どもたちが校庭で走っています' },
+  { id:'daily_play_dance_verb', cat:'daily', sw:'cheza', read:'クチェザ', jp:'遊ぶ：踊る', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kucheza', pos:'verb', example:'例: Watoto wanacheza mpira.\n子どもたちはボールで遊んでいます' },
+  { id:'daily_talk_verb', cat:'daily', sw:'zungumza', read:'クズングムザ', jp:'話す：会話する', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kuzungumza', pos:'verb', example:'例: Ninataka kuzungumza Kiswahili zaidi.\nもっとスワヒリ語で話したいです' },
+  { id:'daily_listen_verb', cat:'daily', sw:'sikiliza', read:'クシキリザ', jp:'聞く：耳を傾ける', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kusikiliza', pos:'verb', example:'例: Ninasikiliza mwalimu.\n先生の話を聞いています' },
+  { id:'daily_watch_look_verb', cat:'daily', sw:'angalia', read:'クアンガリア', jp:'見る：確認する', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kuangalia', pos:'verb', example:'例: Angalia hapa, tafadhali.\nここを見てください' },
+  { id:'daily_search_verb', cat:'daily', sw:'tafuta', read:'クタフタ', jp:'探す', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kutafuta', pos:'verb', example:'例: Ninatafuta funguo zangu.\n自分の鍵を探しています' },
+  { id:'daily_give_remove_verb', cat:'daily', sw:'toa', read:'クトア', jp:'出す：渡す', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kutoa', pos:'verb', example:'例: Toa viatu nje.\n靴を外に出してください' },
+  { id:'daily_receive_verb', cat:'daily', sw:'pokea', read:'クポケア', jp:'受け取る', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kupokea', pos:'verb', example:'例: Nilipokea ujumbe wako.\nあなたのメッセージを受け取りました' },
+  { id:'daily_drink_verb', cat:'daily', sw:'nywa', read:'クニャワ', jp:'飲む', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kunywa', pos:'verb', example:'例: Ninakunywa maji mengi.\n水をたくさん飲んでいます' },
+  { id:'daily_pay_verb', cat:'daily', sw:'lipa', read:'クリパ', jp:'支払う', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kulipa', pos:'verb', example:'例: Nitalipa kwa simu.\n携帯で支払います' },
+  { id:'daily_request_pray_verb', cat:'daily', sw:'omba', read:'クオンバ', jp:'頼む：お願いする', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kuomba', pos:'verb', example:'例: Naomba maji kidogo.\n水を少しお願いします' },
+  { id:'daily_remember_verb', cat:'daily', sw:'kumbuka', read:'ククンブカ', jp:'覚えている：思い出す', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kukumbuka', pos:'verb', example:'例: Nakumbuka jina lako.\nあなたの名前を覚えています' },
+  { id:'daily_travel_verb', cat:'daily', sw:'safiri', read:'クサフィリ', jp:'旅する：移動する', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kusafiri', pos:'verb', example:'例: Nitasafiri kesho asubuhi.\n明日の朝、移動します' },
+  { id:'daily_arrive_verb', cat:'daily', sw:'fika', read:'クフィカ', jp:'着く：到着する', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kufika', pos:'verb', example:'例: Nitafika saa ngapi?\n何時に着きますか' },
+  { id:'daily_be_late_verb', cat:'daily', sw:'chelewa', read:'クチェレワ', jp:'遅れる：遅刻する', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kuchelewa', pos:'verb', example:'例: Nimechelewa kidogo.\n少し遅れました' },
+  { id:'daily_be_on_time_verb', cat:'daily', sw:'wahi', read:'クワヒ', jp:'間に合う', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kuwahi', pos:'verb', example:'例: Niliwahi basi leo.\n今日はバスに間に合いました' },
+  { id:'daily_change_verb', cat:'daily', sw:'badilisha', read:'クバディリシャ', jp:'変える：取り替える', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kubadilisha', pos:'verb', example:'例: Nitabadilisha nguo zangu.\n服を着替えます' },
+  { id:'daily_wear_verb', cat:'daily', sw:'vaa', read:'クヴァア', jp:'着る：身につける', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kuvaa', pos:'verb', example:'例: Ninavaa shati safi.\n清潔なシャツを着ています' },
+  { id:'daily_sell_verb', cat:'daily', sw:'uza', read:'クウザ', jp:'売る', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kuuza', pos:'verb', example:'例: Wanauza matunda sokoni.\n市場で果物を売っています' },
+  { id:'daily_choose_verb', cat:'daily', sw:'chagua', read:'クチャグア', jp:'選ぶ', usage:'日常会話 / 頻出動詞', type:'word', infinitive:'kuchagua', pos:'verb', example:'例: Chagua moja tu.\n一つだけ選んでください' },
+  { id:'daily_start_noun', cat:'daily', sw:'mwanzo', read:'ムワンゾ', jp:'始まり：最初', usage:'日常会話 / 時間', type:'word', note:'複数 mianzo', example:'例: Mwanzo wa safari ni muhimu.\n旅の始まりは大切です' },
+  { id:'daily_end_noun', cat:'daily', sw:'mwisho', read:'ムウィショ', jp:'終わり：最後', usage:'日常会話 / 時間', type:'word', note:'複数 miisho', example:'例: Mwisho wa somo, tutapiga makofi.\n授業の終わりに拍手しましょう' },
+  { id:'daily_break_noun', cat:'daily', sw:'mapumziko', read:'マプムジコ', jp:'休憩：休み', usage:'日常会話 / 時間', type:'word', note:'単数 pumziko', example:'例: Wakati wa mapumziko, kunywa chai.\n休憩時間にはチャイを飲みましょう' },
+  { id:'daily_weekday_monday', cat:'daily', sw:'Jumatatu', read:'ジュマタトゥ', jp:'月曜日', usage:'時間 / 曜日', type:'word', example:'例: Jumatatu nitaenda kazini.\n月曜日に仕事へ行きます' },
+  { id:'daily_weekday_tuesday', cat:'daily', sw:'Jumanne', read:'ジュマンネ', jp:'火曜日', usage:'時間 / 曜日', type:'word', example:'例: Jumanne nina mkutano.\n火曜日に会議があります' },
+  { id:'daily_weekday_wednesday', cat:'daily', sw:'Jumatano', read:'ジュマタノ', jp:'水曜日', usage:'時間 / 曜日', type:'word', example:'例: Jumatano nitapumzika.\n水曜日に休みます' },
+  { id:'daily_weekday_thursday', cat:'daily', sw:'Alhamisi', read:'アルハミシ', jp:'木曜日', usage:'時間 / 曜日', type:'word', example:'例: Alhamisi nitasoma Kiswahili.\n木曜日にスワヒリ語を勉強します' },
+  { id:'daily_weekday_friday', cat:'daily', sw:'Ijumaa', read:'イジュマー', jp:'金曜日', usage:'時間 / 曜日', type:'word', example:'例: Ijumaa nitakula nyama choma.\n金曜日にニャマチョマを食べます' },
+  { id:'daily_weekday_saturday', cat:'daily', sw:'Jumamosi', read:'ジュマモシ', jp:'土曜日', usage:'時間 / 曜日', type:'word', example:'例: Jumamosi nitaenda sokoni.\n土曜日に市場へ行きます' },
+  { id:'daily_weekday_sunday', cat:'daily', sw:'Jumapili', read:'ジュマピリ', jp:'日曜日', usage:'時間 / 曜日', type:'word', example:'例: Jumapili nitapiga simu nyumbani.\n日曜日に家へ電話します' },
+  { id:'daily_use_your_brain', cat:'daily', sw:'bongo', read:'ボンゴ', jp:'脳みそ：頭、脳', usage:'日常会話 / 声かけ', type:'word', note:'口語的な言い方 / 脳の一般語は ubongo', example:'例: Chemsha bongo lako.\n脳みそを働かせて' },
+  { id:'daily_friend_japanese', cat:'daily', sw:'rafiki', read:'ラフィキ', jp:'友達', usage:'日常会話 / 紹介', type:'word', example:'例: Rafiki yangu ni Mjapani.\n私の友達は日本人です' },
+  { id:'daily_have_child', cat:'daily', sw:'pata', read:'クパタ', jp:'得る：手に入れる、授かる', usage:'日常会話 / 家族', type:'word', infinitive:'kupata', example:'例: Walipata mtoto mwaka jana.\n去年、子供を授かりました' },
+  { id:'daily_child_word', cat:'daily', sw:'mtoto', read:'ムトト', jp:'子供', usage:'日常会話 / 家族', type:'word', note:'複数 watoto', example:'例: Mtoto huyu anacheka.\nこの子供は笑っています' },
+  { id:'daily_wife_word', cat:'daily', sw:'mke', read:'ムケ', jp:'妻', usage:'日常会話 / 家族', type:'word', note:'複数 wake', example:'例: Mke wangu anapenda chai.\n私の妻はチャイが好きです' },
+  { id:'daily_funeral_word', cat:'daily', sw:'mazishi', read:'マジシ', jp:'お葬式：埋葬', usage:'日常会話 / 冠婚葬祭', type:'word', note:'ふつう複数形で使う', example:'例: Nitaenda kwenye mazishi kesho.\n明日お葬式に行きます' },
+  { id:'daily_wedding_word', cat:'daily', sw:'harusi', read:'ハルシ', jp:'結婚式', usage:'日常会話 / 冠婚葬祭', type:'word', note:'単複同じ', example:'例: Nitaenda harusini Jumamosi.\n土曜日に結婚式へ行きます' },
+  { id:'daily_birthday_word', cat:'daily', sw:'siku ya kuzaliwa', read:'シク ヤ クザリワ', jp:'誕生日', usage:'日常会話 / 記念日', type:'expression', note:'siku = 日', example:'例: Leo ni siku yangu ya kuzaliwa.\n今日は私の誕生日です' },
+  { id:'daily_anniversary_word', cat:'daily', sw:'siku ya kumbukumbu', read:'シク ヤ クンブクンブ', jp:'記念日', usage:'日常会話 / 記念日', type:'expression', note:'kumbukumbu = 記憶、記念', example:'例: Leo ni siku yetu ya kumbukumbu.\n今日は私たちの記念日です' },
+  { id:'daily_death_word', cat:'daily', sw:'kifo', read:'キフォ', jp:'死', usage:'日常会話 / 生死', type:'word', note:'複数 vifo', example:'例: Kifo ni sehemu ya maisha.\n死は人生の一部です' },
+  { id:'daily_die_verb', cat:'daily', sw:'kufa', read:'クファ', jp:'死ぬ：枯れる', usage:'日常会話 / 生死', type:'word', note:'短い動詞のため不定形で表示', example:'例: Mmea utakufa bila maji.\n植物は水がないと枯れます' },
+  { id:'daily_dog_word', cat:'daily', sw:'mbwa', read:'ムブワ', jp:'犬', usage:'日常会話 / 動物', type:'word', note:'単複同じ', example:'例: Mbwa analinda nyumba.\n犬が家を守っています' },
+  { id:'daily_cat_word', cat:'daily', sw:'paka', read:'パカ', jp:'猫', usage:'日常会話 / 動物', type:'word', note:'単複同じ', example:'例: Paka amelala kitandani.\n猫がベッドで寝ています' },
+  { id:'daily_work_word', cat:'daily', sw:'kazi', read:'カジ', jp:'仕事', usage:'日常会話 / 仕事', type:'word', note:'単複同じ', example:'例: Nina kazi leo.\n今日は仕事があります' },
+  { id:'daily_bird_plane_word', cat:'daily', sw:'ndege', read:'ンデゲ', jp:'鳥：飛行機', usage:'日常会話 / 動物・移動', type:'word', note:'単複同じ / 鳥にも飛行機にも使う', example:'例: Ndege inaruka angani.\n鳥または飛行機が空を飛んでいます' },
+  { id:'daily_urine_word', cat:'daily', sw:'mkojo', read:'ムコジョ', jp:'尿：おしっこ', usage:'日常会話 / 体調・トイレ', type:'word', note:'知識用 / 自分から日常会話で使うことはまずない / 複数 mikojo', example:'例: Mkojo una rangi ya njano.\n尿は黄色いです' },
+  { id:'daily_stool_word', cat:'daily', sw:'kinyesi', read:'キニェシ', jp:'便：うんち', usage:'日常会話 / 体調・トイレ', type:'word', note:'知識用 / 複数 vinyesi', example:'例: Daktari aliuliza kuhusu kinyesi.\n医師が便について聞きました' },
+  { id:'daily_urinate_verb', cat:'daily', sw:'kojoa', read:'クコジョア', jp:'おしっこをする', usage:'日常会話 / 体調・トイレ', type:'word', infinitive:'kukojoa', note:'知識用', example:'例: Mtoto alisema, "Nataka kukojoa."\n子どもが「おしっこしたい」' },
+  { id:'daily_defecate_verb', cat:'daily', sw:'jisaidia', read:'クジサイディア', jp:'用を足す：大便も含む', usage:'日常会話 / 体調・トイレ', type:'word', infinitive:'kujisaidia', note:'知識用', example:'例: Mtoto alisema, "Nataka kujisaidia."\n子どもが「トイレに行きたい」' },
+  { id:'daily_bathe_verb', cat:'daily', sw:'oga', read:'クオガ', jp:'体を洗う：入浴する', usage:'日常会話 / 衛生', type:'word', infinitive:'kuoga', example:'例: Nitaoga jioni.\n夕方に体を洗います' },
+  { id:'daily_wash_dishes_verb', cat:'daily', sw:'osha', read:'クオシャ', jp:'洗う', usage:'日常会話 / 衛生', type:'word', infinitive:'kuosha', example:'例: Nitaosha vyombo baada ya kula.\n食後に食器を洗います' },
+  { id:'daily_dishes_word', cat:'daily', sw:'vyombo', read:'ヴョンボ', jp:'食器：道具', usage:'日常会話 / 衛生', type:'word', note:'単数 chombo', example:'例: Nitaosha vyombo baada ya kula.\n食後に食器を洗います' },
+  { id:'daily_wash_hands_verb', cat:'daily', sw:'nawa', read:'クナワ', jp:'手や顔などを洗う', usage:'日常会話 / 衛生', type:'word', infinitive:'kunawa', example:'例: Nawa mikono kabla ya kula.\n食べる前に手を洗ってください' },
+  { id:'daily_hands_word', cat:'daily', sw:'mikono', read:'ミコノ', jp:'手', usage:'日常会話 / 体', type:'word', note:'単数 mkono', example:'例: Nawa mikono kabla ya kula.\n食べる前に手を洗ってください' },
+  { id:'daily_give_me_tea', cat:'daily', sw:'chai', read:'チャイ', jp:'お茶：甘いミルクティー', usage:'日常会話 / 頼む', type:'word', example:'例: Unipe chai?\nお茶をくれますか？' },
+  { id:'daily_give_you_tea', cat:'daily', sw:'nikupe', read:'ニクペ', jp:'あなたにあげましょうか', usage:'日常会話 / 申し出', type:'word', example:'例: Nikupe chai?\nお茶をあげましょうか？' },
+  { id:'daily_kenyans_bread_tea', cat:'daily', sw:'mkate', read:'ムカテ', jp:'パン', usage:'日常会話 / 食文化', type:'word', note:'複数 mikate', example:'例: Wakenya hukula mikate na chai kila siku.\nケニア人は毎日パンとお茶をとります' },
+  { id:'daily_mandazi_food', cat:'daily', sw:'andazi', read:'アンダジ', jp:'東アフリカの揚げパン', usage:'日常会話 / 食べ物', note:'複数 mandazi' },
+  { id:'daily_kenyan_chai_meaning', cat:'daily', sw:'maziwa', read:'マジワ', jp:'牛乳', usage:'日常会話 / 食文化', type:'word', example:'例: Chai ya Kenya ina maziwa na sukari.\nケニアのチャイは牛乳と砂糖入りです' },
+  { id:'daily_chai_not_plain_tea', cat:'daily', sw:'majani', read:'マジャニ', jp:'葉：茶葉', usage:'日常会話 / 食文化', type:'word', example:'例: Chai haimaanishi chai ya majani.\nチャイは茶葉だけのお茶を意味するわけではありません' },
+  { id:'daily_go_to_toilet', cat:'daily', sw:'msalani', read:'ムサラニ', jp:'トイレに', usage:'日常会話 / 用事を伝える', type:'word', example:'例: Niende msalani.\nトイレに行ってきます' },
+  { id:'daily_mzungu_word', cat:'daily', sw:'mzungu', read:'ムズング', jp:'外国人', usage:'日常会話 / 言葉の注意', type:'word', note:'「ガイジンだ！」的なニュアンスで使われることがある' },
+  { id:'daily_called_mzungu', cat:'daily', sw:'mwenyeji', read:'ムウェニェジ', jp:'地元の人：現地の人', usage:'日常会話 / 文化メモ', type:'word', note:'複数 wenyeji', example:'例: Mwenyeji alinisaidia sokoni.\n現地の人が市場で助けてくれました' },
+  { id:'daily_pombe_forgets', cat:'daily', sw:'pombe', read:'ポンベ', jp:'酒：アルコール', usage:'日常会話 / 生活表現', type:'word', example:'例: Pombe inasahaulisha mambo mengi.\n酒はいろいろなことを忘れさせます' },
+  { id:'daily_water_life', cat:'daily', sw:'maji', read:'マジ', jp:'水', usage:'日常会話 / 生活表現', type:'word', example:'例: Maji ni uhai.\n水は命です' },
+  { id:'daily_not_ugali', cat:'daily', sw:'ugali', read:'ウガリ', jp:'東アフリカの主食', usage:'日常会話 / 食べ物', type:'word', example:'例: Hii ni keki, si ugali.\nこれはケーキで、ウガリではありません' },
+  { id:'daily_japanese_raw_eggs', cat:'daily', sw:'mayai mabichi', read:'マヤイ マビチ', jp:'生卵', usage:'日常会話 / 食文化', type:'compound', example:'例: Wajapani hula mayai mabichi.\n日本人は生卵を食べます' },
+  { id:'daily_japanese_no_snake', cat:'daily', sw:'nyoka', read:'ニョカ', jp:'蛇', usage:'日常会話 / 食文化', type:'word', example:'例: Wajapani hawali nyoka, lakini hula mayai mabichi.\n日本人はNyokaは食べないが、生卵は食べる' },
+  { id:'daily_kenyans_hedgehog', cat:'daily', sw:'nungunungu', read:'ヌングヌング', jp:'ハリネズミ', usage:'日常会話 / 動物', type:'word', example:'例: Nungunungu ni hodari kujificha.\nハリネズミは隠れるのが得意です' },
+  { id:'daily_not_sure_chameleons', cat:'daily', sw:'kinyonga', read:'キニョンガ', jp:'カメレオン', usage:'日常会話 / 動物', type:'word', note:'複数 vinyonga', example:'例: Kinyonga hubadilika kama ninja.\nカメレオンは忍者のように変身します' },
+  { id:'daily_karate_stronger', cat:'daily', sw:'nguvu', read:'ングヴ', jp:'力：強さ、元気', usage:'日常会話 / 健康', type:'word', example:'例: Ninafanya karate ili niwe na nguvu na afya.\n私は強く健康でいるために空手をしています' },
+  { id:'daily_swahili_second_best', cat:'daily', sw:'vizuri', read:'ヴィズリ', jp:'よく：上手に', usage:'日常会話 / ほめる', type:'word', example:'例: Unaongea Kiswahili vizuri.\nあなたはスワヒリ語を上手に話します' },
+  { id:'daily_deep_sleep', cat:'daily', sw:'lala', read:'クララ', jp:'眠る', usage:'日常会話 / 睡眠', type:'word', infinitive:'kulala', example:'例: Umelala fofofo.\nぐっすり眠っています' },
+  { id:'daily_sound_asleep_fofofo', cat:'daily', sw:'fofofo', read:'フォフォフォ', jp:'ぐっすり：深く眠っている様子', usage:'日常会話 / 擬態語', example:'例: Nililala fofofo usiku.\n夜、ぐっすり眠りました' },
+  { id:'daily_like_yogurt', cat:'daily', sw:'maziwa lala', read:'マジワ ララ', jp:'ヨーグルト：発酵乳', usage:'日常会話 / 食べ物', type:'compound', example:'例: Unapenda maziwa lala?\nあなたはヨーグルトが好きですか？' },
+  { id:'daily_ati', cat:'daily', sw:'ati?', read:'アティ', jp:'え？／何だって？', usage:'日常会話 / 聞き返し' },
+  { id:'daily_why_question', cat:'daily', sw:'kwa nini?', read:'クワ ニニ', jp:'なぜ？どうして？', usage:'日常会話 / 質問', type:'expression', example:'例: Kwa nini wewe ni mwerevu sana?\nどうしてあなたはそんなに賢いのですか？' },
+  { id:'daily_late_for_work', cat:'daily', sw:'kazini', read:'カジニ', jp:'職場に：仕事場で', usage:'日常会話 / 仕事', type:'word', example:'例: Nimechelewa kufika kazini.\n仕事に遅刻しました' },
+  { id:'daily_change_clothes', cat:'daily', sw:'chafu', read:'チャフ', jp:'汚い：汚れた', usage:'日常会話 / 身だしなみ', type:'word', example:'例: Ubadilishe nguo zako kwa sababu ni chafu sana.\n服を着替えたほうがいいですよ、すごく汚れています' },
+  { id:'daily_why_nice_clothes', cat:'daily', sw:'nguo', read:'ングオ', jp:'服：衣服', usage:'日常会話 / 服装', type:'word', example:'例: Kwa nini unavaa nguo nzuri hivyo?\nどうしてそんな綺麗な服を着ているの？' },
+  { id:'daily_my_clothes_smell_good', cat:'daily', sw:'nukia', read:'クヌキア', jp:'香る：よい匂いがする', usage:'日常会話 / 服装', type:'word', infinitive:'kunukia', example:'例: Nguo yangu inanukia vizuri.\n私の服はよい匂いがします' },
+  { id:'daily_my_clothes_stink', cat:'daily', sw:'nuka', read:'クヌカ', jp:'臭う：悪い匂いがする', usage:'日常会話 / 服装', type:'word', infinitive:'kunuka', example:'例: Nguo yangu inanuka.\n私の服は臭います' },
+  { id:'daily_clothes_suit_you', cat:'daily', sw:'pendeza', read:'クペンデザ', jp:'似合う：素敵に見える', usage:'日常会話 / ほめる', type:'word', infinitive:'kupendeza', example:'例: Nguo zako zinakupendeza sana!\nとてもよく似合っていますね！' },
+  { id:'daily_you_look_nice', cat:'daily', sw:'unapendeza', read:'ウナペンデザ', jp:'あなたは素敵です：似合っています', usage:'日常会話 / ほめる', type:'word', example:'例: Unapendeza sana!\nあなたはとても素敵です！' },
+  { id:'daily_adj_big', cat:'daily', sw:'kubwa', read:'クブワ', jp:'大きい', usage:'日常会話 / 形容詞', type:'word', note:'語幹 -kubwa / 名詞に合わせて変化', example:'例: Nyumba hii ni kubwa.\nこの家は大きいです' },
+  { id:'daily_adj_small', cat:'daily', sw:'ndogo', read:'ンドゴ', jp:'小さい', usage:'日常会話 / 形容詞', type:'word', note:'語幹 -dogo / 名詞に合わせて変化', example:'例: Nyumba hii ni ndogo.\nこの家は小さいです' },
+  { id:'daily_adj_tall', cat:'daily', sw:'refu', read:'レフ', jp:'高い：背が高い、長い', usage:'日常会話 / 形容詞', type:'word', note:'語幹 -refu / 名詞に合わせて変化', example:'例: Mti huu ni mrefu.\nこの木は高いです' },
+  { id:'daily_adj_short', cat:'daily', sw:'fupi', read:'フピ', jp:'低い：短い', usage:'日常会話 / 形容詞', type:'word', note:'語幹 -fupi / 名詞に合わせて変化', example:'例: Njia hii ni fupi.\nこの道は短いです' },
+  { id:'daily_adj_heavy', cat:'daily', sw:'zito', read:'ズィト', jp:'重い', usage:'日常会話 / 形容詞', type:'word', note:'語幹 -zito / 名詞に合わせて変化', example:'例: Mzigo huu ni mzito.\nこの荷物は重いです' },
+  { id:'daily_adj_light', cat:'daily', sw:'epesi', read:'エペシ', jp:'軽い：簡単な', usage:'日常会話 / 形容詞', type:'word', note:'語幹 -epesi / 名詞に合わせて変化', example:'例: Mfuko huu ni mwepesi.\nこの袋は軽いです' },
+  { id:'daily_adj_wide', cat:'daily', sw:'pana', read:'パナ', jp:'広い', usage:'日常会話 / 形容詞', type:'word', example:'例: Njia hii ni pana.\nこの道は広いです' },
+  { id:'daily_adj_narrow', cat:'daily', sw:'nyembamba', read:'ニェンバンバ', jp:'狭い：細い', usage:'日常会話 / 形容詞', type:'word', example:'例: Njia hii ni nyembamba.\nこの道は狭いです' },
+  { id:'daily_adj_difficult', cat:'daily', sw:'ngumu', read:'ングム', jp:'難しい：硬い', usage:'日常会話 / 形容詞', type:'word', example:'例: Kiswahili si kigumu sana.\nスワヒリ語はそれほど難しくありません' },
+  { id:'daily_adj_easy', cat:'daily', sw:'rahisi', read:'ラヒシ', jp:'簡単な：安い', usage:'日常会話 / 形容詞', type:'word', example:'例: Swali hili ni rahisi.\nこの問題は簡単です' },
+  { id:'daily_adj_important', cat:'daily', sw:'muhimu', read:'ムヒム', jp:'重要な：大切な', usage:'日常会話 / 形容詞', type:'word', note:'形が変わりにくい形容詞', example:'例: Afya ni muhimu.\n健康は大切です' },
+  { id:'daily_feed_me_food', cat:'daily', sw:'mgonjwa', read:'ムゴンジュワ', jp:'病人：病気の人', usage:'日常会話 / 健康', type:'word', note:'複数 wagonjwa', example:'例: Mgonjwa anahitaji chakula na mapumziko.\n病人には食事と休息が必要です' },
+  { id:'daily_japanese_hot_springs', cat:'daily', sw:'chemchemi', read:'チェムチェミ', jp:'湧き水：泉', usage:'日常会話 / 文化', type:'word', note:'chemchemi ya maji ya moto = 温泉', example:'例: Wajapani hupenda chemchemi za maji ya moto.\n日本人は温泉が好きです' },
+  { id:'daily_what_does_it_mean', cat:'daily', sw:'maana', read:'マアナ', jp:'意味', usage:'日常会話 / 意味確認', type:'word', example:'例: Maana yake ni nini?\nそれはどういう意味ですか？' },
+  { id:'daily_school_book', cat:'daily', sw:'kitabu', read:'キタブ', jp:'本', usage:'学校 / 持ち物', note:'複数 vitabu' },
+  { id:'daily_school_notebook', cat:'daily', sw:'daftari', read:'ダフタリ', jp:'ノート', usage:'学校 / 持ち物', note:'複数 madaftari' },
+  { id:'daily_school_pen', cat:'daily', sw:'kalamu', read:'カラム', jp:'ペン', usage:'学校 / 持ち物', note:'単複同じ' },
+  { id:'daily_school_pencil', cat:'daily', sw:'penseli', read:'ペンセリ', jp:'鉛筆', usage:'学校 / 持ち物', note:'単複同じ' },
+  { id:'daily_school_eraser', cat:'daily', sw:'kifutio', read:'キフティオ', jp:'消しゴム', usage:'学校 / 持ち物', note:'複数 vifutio' },
+  { id:'daily_school_ruler', cat:'daily', sw:'rula', read:'ルラ', jp:'定規', usage:'学校 / 持ち物', note:'単複同じ' },
+  { id:'daily_school_scissors', cat:'daily', sw:'mkasi', read:'ムカシ', jp:'はさみ', usage:'学校 / 持ち物', note:'複数 mikasi / makasi も使用あり' },
+  { id:'daily_school_glue', cat:'daily', sw:'gundi', read:'グンディ', jp:'のり・接着剤', usage:'学校 / 持ち物', note:'単複同じ' },
+  { id:'daily_school_paper', cat:'daily', sw:'karatasi', read:'カラタシ', jp:'紙', usage:'学校 / 持ち物', note:'単複同じ' },
+  { id:'daily_school_bag', cat:'daily', sw:'mkoba', read:'ムコバ', jp:'かばん', usage:'学校 / 持ち物', note:'複数 mikoba' },
+  { id:'daily_school_chalk', cat:'daily', sw:'chaki', read:'チャキ', jp:'チョーク', usage:'学校 / 教室', note:'単複同じ' },
+  { id:'daily_school_board', cat:'daily', sw:'ubao', read:'ウバオ', jp:'黒板・板', usage:'学校 / 教室', note:'複数 mbao' },
+  { id:'daily_school_desk', cat:'daily', sw:'dawati', read:'ダワティ', jp:'学習机', usage:'学校 / 教室', note:'複数 madawati' },
+  { id:'daily_school_chair', cat:'daily', sw:'kiti', read:'キティ', jp:'椅子', usage:'学校 / 教室', note:'複数 viti' },
+  { id:'daily_school_uniform', cat:'daily', sw:'sare', read:'サレ', jp:'制服：ユニフォーム', usage:'学校 / 身の回り', type:'word', note:'複数 sare za shule' },
+  { id:'daily_school_classroom', cat:'daily', sw:'darasa', read:'ダラサ', jp:'教室・授業', usage:'学校 / 教室', note:'複数 madarasa' },
+  { id:'daily_i_am_director', cat:'daily', sw:'mkurugenzi', read:'ムクルゲンジ', jp:'代表：ディレクター', usage:'日常会話 / 自己紹介', type:'word', example:'例: Mimi ni mkurugenzi.\n私は代表です' },
+  { id:'daily_time_is_money', cat:'daily', sw:'muda', read:'ムダ', jp:'時間', usage:'日常会話 / 教訓', type:'word', example:'例: Muda ni kama pesa.\n時間はお金のようなものです' },
+  { id:'daily_did_not_eat_raw_fish', cat:'daily', sw:'samaki mbichi', read:'サマキ ムビチ', jp:'生魚', usage:'日常会話 / 食事', type:'compound', example:'例: Bahati mbaya, sikula samaki mbichi huko Diani.\n残念ながら、ディアニで生魚を食べませんでした' },
+  { id:'daily_trash_word', cat:'daily', sw:'takataka', read:'タカタカ', jp:'ごみ：不要物', usage:'日常会話 / 名詞' },
+  { id:'daily_dust_word', cat:'daily', sw:'vumbi', read:'ヴンビ', jp:'ほこり', usage:'日常会話 / 名詞' },
+  { id:'daily_country_dusty', cat:'daily', sw:'nyumba', read:'ニュンバ', jp:'家：建物', usage:'日常会話 / 生活表現', type:'word', example:'例: Kwa nini nyumba yangu ina vumbi kila wakati?\nどうして私の家はいつも埃っぽいのだろう？' },
+  { id:'daily_hot_today', cat:'daily', sw:'joto', read:'ジョト', jp:'暑さ：熱', usage:'日常会話 / 天気', nounClass:'JI-MA', example:'例: Leo kuna joto.\n今日は暑いです' },
+  { id:'daily_sun_word', cat:'daily', sw:'jua', read:'ジュア', jp:'太陽：日差し', usage:'日常会話 / 天気' },
+  { id:'daily_clouds_word', cat:'daily', sw:'wingu', read:'ウィング', jp:'雲', usage:'日常会話 / 天気', note:'複数 mawingu' },
+  { id:'daily_wind_word', cat:'daily', sw:'upepo', read:'ウペポ', jp:'風', usage:'日常会話 / 天気' },
+  { id:'daily_snow_word', cat:'daily', sw:'theluji', read:'テルジ', jp:'雪', usage:'日常会話 / 天気', example:'例: Kilimanjaro ina theluji.\nキリマンジャロには雪があります' },
+  { id:'daily_cyclone_word', cat:'daily', sw:'kimbunga', read:'キンブンガ', jp:'暴風：サイクロン', usage:'日常会話 / 天気' },
+  { id:'daily_cold_word', cat:'daily', sw:'baridi', read:'バリディ', jp:'寒さ：寒い', usage:'日常会話 / 天気' },
+  { id:'daily_rain_word', cat:'daily', sw:'mvua', read:'ムヴア', jp:'雨', usage:'日常会話 / 天気' },
+  { id:'daily_fog_word', cat:'daily', sw:'ukungu', read:'ウクング', jp:'霧：もや', usage:'日常会話 / 天気' },
+  { id:'daily_color_word', cat:'daily', sw:'rangi', read:'ランギ', jp:'色', usage:'日常会話 / 名詞' },
+  { id:'daily_color_red', cat:'daily', sw:'nyekundu', read:'ニェクンドゥ', jp:'赤：赤い', usage:'日常会話 / 色', note:'名詞に合わせて形が変わることがある' },
+  { id:'daily_color_blue', cat:'daily', sw:'bluu', read:'ブルー', jp:'青：青い', usage:'日常会話 / 色' },
+  { id:'daily_color_yellow', cat:'daily', sw:'njano', read:'ンジャノ', jp:'黄色：黄色い', usage:'日常会話 / 色' },
+  { id:'daily_color_green', cat:'daily', sw:'kijani', read:'キジャニ', jp:'緑：緑色', usage:'日常会話 / 色' },
+  { id:'daily_color_black', cat:'daily', sw:'nyeusi', read:'ニェウシ', jp:'黒：黒い', usage:'日常会話 / 色', note:'名詞に合わせて形が変わることがある' },
+  { id:'daily_color_white', cat:'daily', sw:'nyeupe', read:'ニェウペ', jp:'白：白い', usage:'日常会話 / 色', note:'名詞に合わせて形が変わることがある' },
+  { id:'daily_color_brown', cat:'daily', sw:'kahawia', read:'カハウィア', jp:'茶色：茶色い', usage:'日常会話 / 色' },
+  { id:'daily_color_purple', cat:'daily', sw:'zambarau', read:'ザンバラウ', jp:'紫：紫色', usage:'日常会話 / 色' },
+  { id:'daily_color_orange', cat:'daily', sw:'rangi ya machungwa', read:'ランギ ヤ マチュングワ', jp:'オレンジ色', usage:'日常会話 / 色', type:'expression' },
+  { id:'daily_color_gold', cat:'daily', sw:'dhahabu', read:'ダハブ', jp:'金：金色', usage:'日常会話 / 色・金属' },
+  { id:'daily_color_silver', cat:'daily', sw:'fedha', read:'フェダ', jp:'銀：銀色', usage:'日常会話 / 色・金属', note:'「お金」という意味でもよく使う' },
+  { id:'daily_color_copper', cat:'daily', sw:'shaba', read:'シャバ', jp:'銅：銅色', usage:'日常会話 / 色・金属' },
+  { id:'daily_kumbikumbi_word', cat:'daily', sw:'kumbikumbi', read:'クンビクンビ', jp:'羽アリ', usage:'日常会話 / 名詞', example:'例: Kumbikumbi hujitokeza kwa wingi baada ya mvua.\nクンビクンビは雨後に大量発生します' },
+  { id:'daily_kumbikumbi_after_rain', cat:'daily', sw:'baada ya', read:'バアダ ヤ', jp:'〜の後で', usage:'日常会話 / 自然', type:'expression', example:'例: Kumbikumbi huonekana baada ya mvua.\nクンビクンビは雨の後に現れます' },
+  { id:'daily_fly_word', cat:'daily', sw:'nzi', read:'ンジ', jp:'ハエ', usage:'日常会話 / 虫・小動物', note:'単複同じ', example:'例: Nzi anaruka chumbani.\nハエが部屋を飛んでいます' },
+  { id:'daily_bedbug_word', cat:'daily', sw:'kunguni', read:'クングニ', jp:'トコジラミ', usage:'日常会話 / 虫・小動物', note:'単複同じ' },
+  { id:'daily_cockroach_word', cat:'daily', sw:'mende', read:'メンデ', jp:'ゴキブリ', usage:'日常会話 / 虫・小動物', note:'単複同じ' },
+  { id:'daily_scorpion_word', cat:'daily', sw:'nge', read:'ンゲ', jp:'サソリ', usage:'日常会話 / 虫・小動物', note:'単複同じ' },
+  { id:'daily_centipede_word', cat:'daily', sw:'tandu', read:'タンドゥ', jp:'ムカデ', usage:'日常会話 / 虫・小動物', note:'単複同じ', example:'例: Niliwahi kuumwa kwenye mkono na tandu.\n私はムカデに腕を噛まれたことがあります' },
+  { id:'daily_driver_ant_word', cat:'daily', sw:'siafu', read:'シアフ', jp:'軍隊アリ', usage:'日常会話 / 虫・小動物' },
+  { id:'daily_mouse_word', cat:'daily', sw:'panya', read:'パニャ', jp:'ネズミ', usage:'日常会話 / 虫・小動物', note:'単複同じ' },
+  { id:'daily_ant_word', cat:'daily', sw:'sisimizi', read:'シシミジ', jp:'アリ', usage:'日常会話 / 虫・小動物', note:'単複同じ' },
+  { id:'daily_termite_word', cat:'daily', sw:'mchwa', read:'ムチュワ', jp:'シロアリ', usage:'日常会話 / 虫・小動物' },
+  { id:'daily_bee_word', cat:'daily', sw:'nyuki', read:'ニュキ', jp:'蜂', usage:'日常会話 / 虫・小動物', note:'単複同じ' },
+  { id:'daily_mosquito_word', cat:'daily', sw:'mbu', read:'ムブ', jp:'蚊', usage:'日常会話 / 虫・小動物', note:'単複同じ', example:'例: Mbu huniuma usiku.\n蚊は夜に私を刺します' },
+  { id:'daily_crow_word', cat:'daily', sw:'kunguru', read:'クングル', jp:'カラス', usage:'日常会話 / 動物', type:'word', nounClass:'N-N', note:'単複同じ', example:'例: Kunguru wa Japani hawana kifua cheupe.\n日本のカラスの胸は白くありません' },
+  { id:'daily_whale_word', cat:'daily', sw:'nyangumi', read:'ニャングミ', jp:'クジラ', usage:'日常会話 / 動物', type:'word', nounClass:'N-N', note:'単複同じ', example:'例: Sijawahi kuona nyangumi.\n私は一度もクジラを見たことがありません' },
+  { id:'daily_dolphin_word', cat:'daily', sw:'pomboo', read:'ポンボー', jp:'イルカ', usage:'日常会話 / 動物', type:'word', nounClass:'N-N', note:'単複同じ / nyangumi はクジラ', example:'例: Sijawahi kuona pomboo.\n私は一度もイルカを見たことがありません' },
+  { id:'daily_feet_word', cat:'daily', sw:'mguu', read:'ムグウ', jp:'足：脚', usage:'日常会話 / 身体', type:'word', nounClass:'M-MI', note:'複数 miguu', example:'例: Mguu wangu unauma.\n私の足が痛いです' },
+  { id:'daily_teach_me_swahili', cat:'daily', sw:'somesha', read:'クソメシャ', jp:'教える：学ばせる', usage:'日常会話 / 学習', type:'word', infinitive:'kusomesha', example:'例: Unisomeshe Kiswahili.\n私にスワヒリ語を教えてください' },
+  { id:'daily_vocabulary', cat:'daily', sw:'msamiati', read:'ムサミアティ', jp:'語彙', usage:'日常会話 / 学習用語' },
+  { id:'daily_verbs', cat:'daily', sw:'kitenzi', read:'キテンジ', jp:'動詞', usage:'日常会話 / 学習用語', type:'word', note:'複数 vitenzi' },
+  { id:'daily_nouns', cat:'daily', sw:'jina', read:'ジナ', jp:'名詞：名前', usage:'日常会話 / 学習用語', type:'word', note:'複数 majina' },
+  { id:'daily_expressions', cat:'daily', sw:'msemo', read:'ムセモ', jp:'言い回し', usage:'日常会話 / 学習用語', type:'word', note:'複数 misemo' },
+  { id:'daily_take_it', cat:'daily', sw:'shika!', read:'シカ', jp:'取って！／受け取って！', usage:'日常会話 / 命令' },
+  { id:'daily_turn_over_word', cat:'daily', sw:'pindua', read:'ピンドゥア', jp:'ひっくり返す：裏返す', usage:'日常会話 / 動作', type:'word', example:'例: Pindua chapati, tafadhali.\nチャパティを裏返してください' },
+  { id:'daily_thieves_bad_people', cat:'daily', sw:'mwizi', read:'ムウィジ', jp:'泥棒', usage:'日常会話 / 一般表現', type:'word', note:'複数 wezi', example:'例: Wezi ni watu wabaya.\n泥棒は悪い人たちです' },
+  { id:'daily_see_you_again', cat:'daily', sw:'tena', read:'テナ', jp:'また：再び', usage:'日常会話 / 別れのあいさつ', type:'word', example:'例: Tutaonana tena.\nまた会いましょう' },
+  { id:'daily_parents_share_love', cat:'daily', sw:'upendo', read:'ウペンド', jp:'愛：愛情', usage:'日常会話 / 家族', type:'word', example:'例: Wazazi wangu wanapeana upendo.\n私の両親は愛情を与え合っています' },
+  { id:'travel_where', cat:'travel', sw:'wapi', read:'ワピ', jp:'どこ', usage:'旅先 / 現在地確認', type:'word', example:'例: Hii ni wapi?\nここはどこですか' },
+  { id:'travel_go', cat:'travel', sw:'enda', read:'クウェンダ', jp:'行く', usage:'旅先 / 行き先を伝える', type:'word', infinitive:'kwenda', example:'例: Ninataka kwenda Nairobi.\nナイロビへ行きたいです' },
+  { id:'travel_map', cat:'travel', sw:'ramani', read:'ラマニ', jp:'地図', usage:'旅先 / 道案内', type:'word', example:'例: Unaweza kunionyesha kwenye ramani?\n地図で示してもらえますか' },
+  { id:'travel_cost', cat:'travel', sw:'pesa', read:'ペサ', jp:'お金', usage:'旅先 / 料金確認', type:'word', example:'例: Itakuwa pesa ngapi?\nいくらかかりますか' },
+  { id:'travel_there', cat:'travel', sw:'huko', read:'フコ', jp:'そこへ：あちらへ', usage:'旅先 / 移動', type:'word', example:'例: Nipeleke huko, tafadhali.\nそこへ連れて行ってください' },
+  { id:'travel_straight', cat:'travel', sw:'moja kwa moja', read:'モジャ クワ モジャ', jp:'まっすぐに：直接に', usage:'旅先 / 道案内', type:'expression', example:'例: Nenda moja kwa moja.\nまっすぐ行ってください' },
+  { id:'travel_turn_left_there', cat:'travel', sw:'pinda', read:'ピンダ', jp:'曲がる：曲がって', usage:'旅先 / 道案内', type:'word', example:'例: Tafadhali pinda kushoto pale.\nそこを左に曲がってください' },
+  { id:'travel_direction_right', cat:'travel', sw:'kulia', read:'クリア', jp:'右', usage:'旅先 / 方向', note:'語源メモ: kula（食べる）に関係するという説がある' },
+  { id:'travel_direction_left', cat:'travel', sw:'kushoto', read:'クショト', jp:'左', usage:'旅先 / 方向' },
+  { id:'travel_direction_front', cat:'travel', sw:'mbele', read:'ムベレ', jp:'前：前方', usage:'旅先 / 方向' },
+  { id:'travel_direction_back', cat:'travel', sw:'nyuma', read:'ニュマ', jp:'後ろ', usage:'旅先 / 方向' },
+  { id:'travel_directions', cat:'travel', sw:'njia', read:'ンジア', jp:'道：方法', usage:'旅先 / 道案内', type:'word', example:'例: Tafadhali nielekeza njia.\n道を教えてください' },
+  { id:'travel_meeting', cat:'travel', sw:'mkutano', read:'ムクタノ', jp:'会議', usage:'旅先 / 予定を伝える', type:'word', example:'例: Ninakwenda kwenye mkutano.\n会議に行きます' },
+  { id:'travel_meeting_at_seven', cat:'travel', sw:'saa moja', read:'サア モジャ', jp:'7時：東アフリカ式の時刻表現', usage:'旅先 / 予定を伝える', type:'expression', example:'例: Nina mkutano saa moja.\n7時に会議があります' },
+  { id:'travel_drive_safely', cat:'travel', sw:'usalama', read:'ウサラマ', jp:'安全', usage:'旅先 / 車移動', type:'word', example:'例: Tafadhali endesha kwa usalama.\n安全運転でお願いします' },
+  { id:'market_price', cat:'market', sw:'bei', read:'ベイ', jp:'値段：価格', usage:'市場 / 値段確認', type:'word', example:'例: Bei gani?\n値段はいくらですか' },
+  { id:'market_expensive', cat:'market', sw:'ghali', read:'ガリ', jp:'高い：値段が高い', usage:'市場 / 値段交渉', type:'word', example:'例: Ni ghali sana.\nとても高いです' },
+  { id:'market_reduce', cat:'market', sw:'punguza', read:'プングザ', jp:'減らして：安くして', usage:'市場 / 値段交渉', type:'word', example:'例: Punguza kidogo, tafadhali.\n少し安くしてください' },
+  { id:'market_water', cat:'market', sw:'nunua', read:'クヌヌア', jp:'買う', usage:'市場 / 買い物', type:'word', infinitive:'kununua', example:'例: Nataka kununua maji.\n水を買いたいです' },
+  { id:'market_order', cat:'market', sw:'agiza', read:'クアギザ', jp:'注文する', usage:'市場 / 注文', type:'word', infinitive:'kuagiza', example:'例: Nataka kuagiza chai na mandazi.\nチャイとマンダジを注文したいです' },
+  { id:'market_fruit', cat:'market', sw:'matunda', read:'マトゥンダ', jp:'果物', usage:'市場 / 商品確認', type:'word', example:'例: Una matunda gani?\nどんな果物がありますか' },
+  { id:'market_sukuma_wiki', cat:'market', sw:'sukuma wiki', read:'スクマ ウィキ', jp:'ケールに似た野菜', usage:'市場 / 野菜', type:'compound' },
+  { id:'market_maize', cat:'market', sw:'hindi', read:'ヒンディ', jp:'トウモロコシ', usage:'市場 / 野菜', note:'複数 mahindi' },
+  { id:'market_kachumbari_roadside', cat:'market', sw:'kachumbari', read:'カチュンバリ', jp:'トマトと玉ねぎのサラダ', usage:'市場 / 食べ物', type:'word', example:'例: Kachumbari ni rahisi kula njiani.\nカチュンバリは道端で気軽に食べられます' },
+  { id:'market_sugarcane_sweet', cat:'market', sw:'mua', read:'ムア', jp:'サトウキビ', usage:'市場 / 食べ物', type:'word', note:'複数 miwa', example:'例: Mua ni mtamu na hutengeneza sukari.\nサトウキビは甘く、砂糖の原料です' },
+  { id:'market_meat_word', cat:'market', sw:'nyama', read:'ニャマ', jp:'肉', usage:'市場 / 食べ物', type:'word' },
+  { id:'market_grill_word', cat:'market', sw:'choma', read:'チョマ', jp:'焼く：あぶる', usage:'市場 / 調理', type:'word' },
+  { id:'market_nyama_choma_meaning', cat:'market', sw:'nyama choma', read:'ニャマ チョマ', jp:'焼き肉：炭火などで焼いた肉', usage:'市場 / 食べ物', type:'compound', example:'例: Wakenya hupenda nyama choma.\nケニア人はニャマチョマが好きです' },
+  { id:'bus_station', cat:'bus', sw:'stendi', read:'ステンディ', jp:'乗り場：スタンド', usage:'バスターミナル / 場所確認', type:'word', example:'例: Stendi ya basi iko wapi?\nバス乗り場はどこですか' },
+  { id:'bus_ticket', cat:'bus', sw:'tikiti', read:'ティキティ', jp:'切符：チケット', usage:'バスターミナル / 切符購入', type:'word', example:'例: Naomba tikiti moja.\n切符を1枚お願いします' },
+  { id:'bus_depart', cat:'bus', sw:'basi', read:'バシ', jp:'バス', usage:'バスターミナル / 時刻確認', type:'word', example:'例: Basi linaondoka saa ngapi?\nバスは何時に出発しますか' },
+  { id:'bus_stop', cat:'bus', sw:'shusha', read:'シュシャ', jp:'降ろして：下ろして', usage:'バス / 降車', type:'word', example:'例: Shusha hapa, tafadhali.\nここで降ろしてください' },
+  { id:'bus_seat', cat:'bus', sw:'kaa', read:'クカア', jp:'座る：いる', usage:'バス / 座席確認', type:'word', infinitive:'kukaa', example:'例: Naweza kukaa hapa?\nここに座ってもいいですか' },
+  { id:'bus_caught_matatu', cat:'bus', sw:'matatu', read:'マタトゥ', jp:'マタツ：ケニアの乗合ワゴンバス', usage:'バスターミナル / 乗車', type:'word', example:'例: Nimewahi kupanda matatu.\nマタツに乗るのに間に合いました' },
+  { id:'bus_fare_amount', cat:'bus', sw:'nauli', read:'ナウリ', jp:'運賃', usage:'バスターミナル / 運賃確認', type:'word', example:'例: Nauli ni kiasi gani?\n運賃はいくらですか？' },
+  { id:'bus_fare_shillings', cat:'bus', sw:'shilingi', read:'シリンギ', jp:'シリング', usage:'バスターミナル / 運賃確認', type:'word', example:'例: Nauli ni Shilingi ngapi?\n運賃は何シリングですか？' },
+  { id:'hotel_room', cat:'hotel', sw:'chumba', read:'チュンバ', jp:'部屋', usage:'ホテル / 空室確認', type:'word', note:'複数 vyumba', example:'例: Vyumba vipo?\n空いている部屋はありますか' },
+  { id:'hotel_price', cat:'hotel', sw:'usiku', read:'ウシク', jp:'夜：1泊', usage:'ホテル / 料金確認', type:'word', example:'例: Chumba ni bei gani kwa usiku?\n1泊いくらですか' },
+  { id:'hotel_reserve', cat:'hotel', sw:'nafasi', read:'ナファシ', jp:'空き：場所、予約枠', usage:'ホテル / 予約確認', type:'word', example:'例: Nimeweka nafasi ya chumba.\n部屋を予約しています' },
+  { id:'hotel_hotwater', cat:'hotel', sw:'moto', read:'モト', jp:'熱い：火', usage:'ホテル / 設備確認', type:'word', note:'maji ya moto = お湯', example:'例: Kuna maji ya moto?\nお湯はありますか' },
+  { id:'hotel_checkout', cat:'hotel', sw:'ondoka', read:'クオンドカ', jp:'出発する：立ち去る', usage:'ホテル / 出発', type:'word', infinitive:'kuondoka', example:'例: Ninataka kuondoka.\nチェックアウトしたいです' },
+  { id:'hospital_doctor', cat:'hospital', sw:'daktari', read:'ダクタリ', jp:'医師', usage:'病院 / 受診', type:'word', note:'複数 madaktari', example:'例: Nahitaji daktari.\n医師が必要です' },
+  { id:'hospital_sick', cat:'hospital', sw:'umwa', read:'クウムワ', jp:'病む：痛む', usage:'病院 / 症状', type:'word', infinitive:'kuumwa', note:'Ninaumwa = 体調が悪いです / kuumwa na ... = ...が痛みます', example:'例: Ninaumwa.\n体調が悪いです' },
+  { id:'hospital_what_is_wrong', cat:'hospital', sw:'nini', read:'ニニ', jp:'何', usage:'病院 / 症状確認', type:'word', example:'例: Unaumwa na nini?\nどんな症状ですか？' },
+  { id:'hospital_sore_throat', cat:'hospital', sw:'koo', read:'コオ', jp:'喉', usage:'病院 / 症状', type:'word', example:'例: Ninaumwa na koo.\n喉が痛みます' },
+  { id:'hospital_get_well', cat:'hospital', sw:'pole', read:'ポレ', jp:'お大事に：気の毒に', usage:'病院 / 見舞い', type:'word', example:'例: Pole. Upone haraka.\nお大事に。早くよくなってください' },
+  { id:'hospital_need_diarrhea_medicine', cat:'hospital', sw:'dawa', read:'ダワ', jp:'薬', usage:'病院 / 薬', type:'word', example:'例: Kunywa dawa mara mbili kwa siku.\n1日に2回、薬を飲んでください' },
+  { id:'hospital_diarrhea', cat:'hospital', sw:'harisha', read:'クハリシャ', jp:'下痢する', usage:'病院 / 症状', type:'word', infinitive:'kuharisha', example:'例: Ninaharisha.\n下痢をしています' },
+  { id:'hospital_stomach_cramps', cat:'hospital', sw:'tumbo', read:'トゥンボ', jp:'お腹：腹部', usage:'病院 / 症状', type:'word', example:'例: Tumbo linakata.\nお腹が差し込むように痛みます' },
+  { id:'hospital_fever', cat:'hospital', sw:'homa', read:'ホマ', jp:'熱：発熱', usage:'病院 / 症状', type:'word', example:'例: Nina homa.\n熱があります' },
+  { id:'hospital_pain', cat:'hospital', sw:'maumivu', read:'マウミヴ', jp:'痛み', usage:'病院 / 症状', type:'word', example:'例: Nina maumivu hapa.\nここが痛いです' },
+  { id:'hospital_allergy', cat:'hospital', sw:'mzio', read:'ムズィオ', jp:'アレルギー', usage:'病院 / 薬', type:'word', example:'例: Nina mzio wa dawa hii.\nこの薬にアレルギーがあります' },
+  { id:'hospital_vaccination', cat:'hospital', sw:'chanjo', read:'チャンジョ', jp:'予防接種：ワクチン', usage:'病院 / 予防接種', type:'word', example:'例: Ninahitaji kupata chanjo.\n予防接種を受ける必要があります' },
+  { id:'emergency_help', cat:'emergency', sw:'msaada!', read:'ムサアダ', jp:'助けて！', usage:'救急時 / 助けを呼ぶ', example:'例: Msaada!\n助けて！' },
+  { id:'emergency_police', cat:'emergency', sw:'polisi', read:'ポリシ', jp:'警察', usage:'救急時 / 通報', type:'word', example:'例: Piga polisi!\n警察を呼んで！' },
+  { id:'emergency_accident', cat:'emergency', sw:'ajali', read:'アジャリ', jp:'事故', usage:'救急時 / 状況説明', type:'word', example:'例: Kuna ajali.\n事故があります' },
+  { id:'emergency_ambulance', cat:'emergency', sw:'ambulansi', read:'アンブランシ', jp:'救急車', usage:'救急時 / 救急要請', type:'word', example:'例: Nahitaji ambulansi.\n救急車が必要です' },
+  { id:'emergency_danger', cat:'emergency', sw:'hatari', read:'ハタリ', jp:'危険', usage:'救急時 / 危険を伝える', type:'word', note:'名詞 / 危険な〜 は -a hatari', example:'例: Ni hatari.\n危険です' },
+  { id:'phone_call', cat:'phone', sw:'simu', read:'シム', jp:'電話', usage:'電話 / 連絡', type:'word', example:'例: Ukiwa na muda, nipigie simu.\n時間がある時、電話して' },
+  { id:'phone_number', cat:'phone', sw:'namba', read:'ナンバ', jp:'番号', usage:'電話 / 番号確認', type:'word', example:'例: Namba yako ni gani?\nあなたの電話番号は何ですか' },
+  { id:'phone_hear', cat:'phone', sw:'sikia', read:'クシキア', jp:'聞く：聞こえる', usage:'電話 / 聞き返し', type:'word', infinitive:'kusikia', example:'例: Sikusikii vizuri.\nよく聞こえません' },
+  { id:'phone_slowly', cat:'phone', sw:'sema', read:'クセマ', jp:'話す：言う', usage:'電話 / 聞き返し', type:'word', infinitive:'kusema', example:'例: Tafadhali sema polepole.\nゆっくり話してください' },
+  { id:'phone_later', cat:'phone', sw:'baadaye', read:'バアダイェ', jp:'あとで：後ほど', usage:'電話 / 連絡', type:'word', example:'例: Nitakupigia baadaye.\nあとで電話します' },
+];
+
+const HUMOR_EXAMPLES = {
+  daily_please: '例: Tafadhali nisaidie.\n手伝ってください',
+  daily_excuse: '例: Samahani, naomba kupita.\nすみません、通してください',
+  daily_yes: '例: Ndiyo, ninaelewa.\nはい、わかります',
+  daily_no: '例: Hapana, sielewi.\nいいえ、わかりません',
+  daily_eaten: '例: Umeshakula?\nもう食べましたか？',
+  daily_number_one: '例: Nina kalamu moja.\nペンが1本あります',
+  daily_number_two: '例: Nina vitabu viwili.\n本が2冊あります',
+  daily_number_three: '例: Nina ndizi tatu.\nバナナが3本あります',
+  daily_number_four: '例: Nina mayai manne.\n卵が4個あります',
+  daily_number_five: '例: Kuna watu watano.\n人が5人います',
+  daily_number_six: '例: Nina machungwa sita.\nオレンジが6個あります',
+  daily_number_seven: '例: Wiki ina siku saba.\n1週間は7日です',
+  daily_number_eight: '例: Kuna vikombe nane.\nカップが8個あります',
+  daily_number_nine: '例: Nina maswali tisa.\n質問が9つあります',
+  daily_number_ten: '例: Nipe dakika kumi.\n10分ください',
+  daily_number_twenty: '例: Bei ni shilingi ishirini.\n値段は20シリングです',
+  daily_number_thirty: '例: Nina dakika thelathini.\n30分あります',
+  daily_number_forty: '例: Bei ni shilingi arobaini.\n値段は40シリングです',
+  daily_number_fifty: '例: Bei ni shilingi hamsini.\n値段は50シリングです',
+  daily_number_seventy: '例: Basi lina watu sabini.\nバスに70人います',
+  daily_number_eighty: '例: Bei ni shilingi themanini.\n値段は80シリングです',
+  daily_number_ninety: '例: Babu yangu aliishi mpaka miaka tisini.\n私の祖父は90歳まで生きました',
+  daily_number_one_hundred: '例: Bei ni shilingi mia moja.\n値段は100シリングです',
+  daily_number_one_thousand: '例: Nauli ni shilingi elfu moja.\n運賃は1000シリングです',
+  daily_number_ten_thousand: '例: Shilingi elfu kumi zinatosha mwezi mmoja.\n10000シリングで1ヶ月暮らせます',
+  daily_date_today: '例: Leo nina mkutano.\n今日、会議があります',
+  daily_date_yesterday: '例: Jana nilisoma Kiswahili.\n昨日スワヒリ語を勉強しました',
+  daily_date_tomorrow: '例: Kesho nitasafiri.\n明日、移動します',
+  daily_date_day_after_tomorrow: '例: Kesho kutwa nitarudi.\n明後日、戻ります',
+  daily_date_three_days_later: '例: Mtondo nitapumzika.\n明々後日、休みます',
+  daily_date_day_before_yesterday: '例: Juzi nilifika hapa.\n一昨日ここに着きました',
+  daily_mandazi_food: '例: Andazi hili ni tamu sana.\nこのマンダジはとても甘いです',
+  daily_ati: '例: Ati? Sijasikia vizuri.\nえ？よく聞こえません',
+  daily_school_book: '例: Kitabu kiko mezani.\n本は机の上です',
+  daily_school_notebook: '例: Daftari langu liko mkobani.\n私のノートはかばんの中です',
+  daily_school_pen: '例: Kalamu yangu imepotea.\n私のペンがなくなりました',
+  daily_school_pencil: '例: Penseli iko hapa.\n鉛筆はここにあります',
+  daily_school_eraser: '例: Kifutio kiko wapi?\n消しゴムはどこですか',
+  daily_school_ruler: '例: Rula iko mezani.\n定規は机の上です',
+  daily_school_scissors: '例: Makasi yanakata karatasi vizuri.\nはさみは紙をよく切ります',
+  daily_school_glue: '例: Gundi iko hapa.\nのりはここにあります',
+  daily_school_paper: '例: Karatasi moja inatosha.\n紙1枚で足ります',
+  daily_school_bag: '例: Mkoba wangu ni mzito.\n私のかばんは重いです',
+  daily_school_chalk: '例: Chaki iko ubaoni.\nチョークは黒板にあります',
+  daily_school_board: '例: Ubao uko mbele.\n黒板は前にあります',
+  daily_school_desk: '例: Dawati langu ni safi.\n私の机はきれいです',
+  daily_school_chair: '例: Kiti hiki kiko wazi.\nこの椅子は空いています',
+  daily_school_uniform: '例: Sare ya shule inanipendeza.\n制服がよく似合っています',
+  daily_school_classroom: '例: Darasa linaanza sasa.\n授業が今始まります',
+  daily_trash_word: '例: Tupa takataka hapa.\nごみをここに捨ててください',
+  daily_dust_word: '例: Kuna vumbi jingi hapa.\nここはほこりが多いです',
+  daily_hot_today: '例: Leo kuna joto.\n今日は暑いです',
+  daily_sun_word: '例: Jua ni kali leo.\n今日は日差しが強いです',
+  daily_clouds_word: '例: Mawingu yako angani.\n雲が空にあります',
+  daily_wind_word: '例: Upepo unavuma.\n風が吹いています',
+  daily_cyclone_word: '例: Kimbunga kiko mbali.\n暴風は遠くにあります',
+  daily_cold_word: '例: Leo kuna baridi.\n今日は寒いです',
+  daily_rain_word: '例: Mvua inanyesha.\n雨が降っています',
+  daily_fog_word: '例: Kuna ukungu njiani.\n道に霧があります',
+  daily_color_word: '例: Rangi hii ni nzuri.\nこの色はきれいです',
+  daily_color_red: '例: Rangi hii ni nyekundu.\nこれは赤色です',
+  daily_color_blue: '例: Rangi hii ni bluu.\nこれは青色です',
+  daily_color_yellow: '例: Rangi hii ni njano.\nこれは黄色です',
+  daily_color_green: '例: Rangi hii ni kijani.\nこれは緑色です',
+  daily_color_black: '例: Rangi hii ni nyeusi.\nこれは黒色です',
+  daily_color_white: '例: Nilishangaa kuona kunguru mwenye kifua cheupe.\n私は胸が白いカラスを見て驚きました',
+  daily_color_brown: '例: Rangi hii ni kahawia.\nこれは茶色です',
+  daily_color_purple: '例: Rangi hii ni zambarau.\nこれは紫色です',
+  daily_color_orange: '例: Hii ni rangi ya machungwa.\nこれはオレンジ色です',
+  daily_color_gold: '例: Pete hii ni ya dhahabu.\nこの指輪は金製です',
+  daily_color_silver: '例: Pete hii ni ya fedha.\nこの指輪は銀製です',
+  daily_color_copper: '例: Waya huu ni wa shaba.\nこの線は銅製です',
+  daily_bedbug_word: '例: Kuna kunguni kitandani.\nベッドにトコジラミがいます',
+  daily_cockroach_word: '例: Kuna mende jikoni.\n台所にゴキブリがいます',
+  daily_scorpion_word: '例: Kuna nge chini ya jiwe.\n石の下にサソリがいます',
+  daily_driver_ant_word: '例: Siafu wanapita polepole.\n軍隊アリがゆっくり通っています',
+  daily_mouse_word: '例: Panya yuko chumbani.\n部屋にネズミがいます',
+  daily_ant_word: '例: Kuna sisimizi mezani.\nテーブルにアリがいます',
+  daily_termite_word: '例: Mchwa wanakula mbao.\nシロアリは木を食べます',
+  daily_bee_word: '例: Nyuki yuko kwenye ua.\n花に蜂がいます',
+  daily_vocabulary: '例: Msamiati wangu unaongezeka.\n私の語彙は増えています',
+  daily_verbs: '例: Vitenzi ni muhimu.\n動詞は大切です',
+  daily_nouns: '例: Majina ni muhimu.\n名前は大切です',
+  daily_expressions: '例: Msemo mzuri hufungua moyo.\nよい言い回しは心を開きます',
+  daily_take_it: '例: Shika mfuko huu.\nこの袋を持って',
+  travel_direction_right: '例: Pinda kulia kwenye kona pale.\nそこの角を右に曲がって',
+  travel_direction_left: '例: Pinda kushoto pale.\nそこを左に曲がって',
+  travel_direction_front: '例: Mbele kuna duka.\n前に店があります',
+  travel_direction_back: '例: Nyuma kuna choo.\n後ろにトイレがあります',
+  market_sukuma_wiki: '例: Ninapenda sukuma wiki.\nスクマウィキが好きです',
+  market_maize: '例: Mahindi yanauzwa sokoni.\nトウモロコシは市場で売られています',
+  market_meat_word: '例: Ninataka nyama kidogo.\n肉を少し欲しいです',
+  market_grill_word: '例: Choma nyama vizuri.\n肉をよく焼いてください',
+  emergency_help: '例: Msaada!\n助けて！'
+};
+
+PHRASES.forEach((item) => {
+  if (!Object.prototype.hasOwnProperty.call(item, 'example') && HUMOR_EXAMPLES[item.id]) item.example = HUMOR_EXAMPLES[item.id];
+});
+
+const CATEGORIES = {
+  all: '全カード',
+  noun: '名詞',
+  verb: '動詞',
+  modifier: '形容詞・副詞',
+  other: 'その他'
+};
+const STORAGE_KEY = 'sakusaku_swahili_progress_v1';
+const CATEGORY_STORAGE_KEY = 'sakusaku_swahili_category_v1';
+const DISPLAY_ORDER_STORAGE_KEY = 'sakusaku_swahili_display_order_v1';
+const TEST_CHOICE_COUNT_STORAGE_KEY = 'sakusaku_swahili_test_choices_v1';
+const FRONT_GRAMMAR_HINTS_STORAGE_KEY = 'sakusaku_swahili_front_grammar_hints_v1';
+const LEGACY_FRONT_POS_VISIBILITY_STORAGE_KEY = 'sakusaku_swahili_front_pos_visible_v1';
+const TEST_CHOICE_COUNT_OPTIONS = [2, 3, 4];
+const DISPLAY_ORDERS = {
+  random: 'ランダム',
+  asc: 'A→Z',
+  desc: 'Z→A'
+};
+const OTHER_CATEGORY_IDS = new Set([
+  'daily_tanzania_nane_nane',
+  'daily_kenya_independence_day',
+  'daily_birthday_word',
+  'daily_anniversary_word'
+]);
+const QUALITY_LABELS = {
+  A: { label: '実用', description: 'そのまま使える基本表現' },
+  B: { label: '文脈あり', description: '冗談・文化・口語として使いどころを見る表現' },
+  C: { label: '要確認', description: '現地話者または講師に自然さを確認したい表現' }
+};
+const QUALITY_C_IDS = new Set([]);
+const QUALITY_B_IDS = new Set([
+  'daily_mzungu_word',
+  'daily_use_your_brain',
+  'daily_urine_word',
+  'daily_stool_word',
+  'daily_urinate_verb',
+  'daily_defecate_verb',
+  'daily_pombe_forgets',
+  'daily_japanese_raw_eggs',
+  'daily_why_question',
+  'daily_crow_word',
+  'daily_whale_word',
+  'daily_dolphin_word',
+  'market_nyama_choma_meaning'
+]);
+const QUALITY_B_USAGE_MARKERS = [
+  '日常会話 / 声かけ',
+  '日常会話 / 生活表現',
+  '日常会話 / 食文化',
+  '日常会話 / 文化',
+  '日常会話 / 文化メモ',
+  '日常会話 / 冗談',
+  '日常会話 / 睡眠',
+  '日常会話 / 擬態語',
+  '日常会話 / 口語表現',
+  '日常会話 / 反復表現',
+  '日常会話 / 虫・小動物',
+  '日常会話 / 動物',
+  '日常会話 / 自然',
+  '日常会話 / 色',
+  '日常会話 / 色・金属',
+  'タンザニア / 文化',
+  'ケニア / 文化',
+  '市場 / 食べ物'
+];
+const POS_LABELS = {
+  noun: { label: '名詞', description: '人・物・場所・考えを表す語' },
+  verb: { label: '動詞', description: '動作や状態を表す語' },
+  adjective: { label: '形容詞', description: '性質や様子を表す語' },
+  adverb: { label: '副詞', description: '動き方・程度・時を補う語' },
+  number: { label: '数', description: '数を表す語' },
+  expression: { label: '表現', description: 'あいさつ・返事・決まり文句' }
+};
+const POS_BY_ID = {
+  daily_hello: 'expression',
+  daily_fine: 'adjective',
+  daily_please: 'expression',
+  daily_excuse: 'expression',
+  daily_thanks: 'expression',
+  daily_yes: 'expression',
+  daily_no: 'expression',
+  daily_cut_into_pieces: 'adverb',
+  daily_quickly_chapchap: 'adverb',
+  daily_slowly_polepole: 'adverb',
+  daily_quickly_haraka_haraka: 'adverb',
+  daily_quietly_kimya_kimya: 'adverb',
+  daily_little_by_little: 'adverb',
+  daily_eaten: 'verb',
+  daily_not_yet_eaten: 'adverb',
+  daily_we_are_together: 'adverb',
+  daily_tanzania_nane_nane: 'noun',
+  daily_date_today: 'adverb',
+  daily_date_yesterday: 'adverb',
+  daily_date_tomorrow: 'adverb',
+  daily_date_day_after_tomorrow: 'adverb',
+  daily_date_three_days_later: 'adverb',
+  daily_date_day_before_yesterday: 'adverb',
+  daily_every_word: 'adverb',
+  daily_weekday_monday: 'adverb',
+  daily_weekday_tuesday: 'adverb',
+  daily_weekday_wednesday: 'adverb',
+  daily_weekday_thursday: 'adverb',
+  daily_weekday_friday: 'adverb',
+  daily_weekday_saturday: 'adverb',
+  daily_weekday_sunday: 'adverb',
+  daily_give_you_tea: 'expression',
+  daily_go_to_toilet: 'expression',
+  daily_ati: 'expression',
+  daily_why_question: 'expression',
+  daily_why_nice_clothes: 'expression',
+  daily_you_look_nice: 'expression',
+  daily_karate_stronger: 'noun',
+  daily_late_for_work: 'adverb',
+  daily_change_clothes: 'adjective',
+  daily_adj_big: 'adjective',
+  daily_adj_small: 'adjective',
+  daily_adj_tall: 'adjective',
+  daily_adj_short: 'adjective',
+  daily_adj_heavy: 'adjective',
+  daily_adj_light: 'adjective',
+  daily_adj_wide: 'adjective',
+  daily_adj_narrow: 'adjective',
+  daily_adj_difficult: 'adjective',
+  daily_adj_easy: 'adjective',
+  daily_adj_important: 'adjective',
+  daily_take_it: 'expression',
+  daily_have_child: 'verb',
+  daily_color_red: 'adjective',
+  daily_color_blue: 'adjective',
+  daily_color_yellow: 'adjective',
+  daily_color_green: 'adjective',
+  daily_color_black: 'adjective',
+  daily_color_white: 'adjective',
+  daily_color_brown: 'adjective',
+  daily_color_purple: 'adjective',
+  daily_color_orange: 'adjective',
+  daily_color_gold: 'adjective',
+  daily_color_silver: 'adjective',
+  daily_color_copper: 'adjective',
+  daily_swahili_second_best: 'adverb',
+  daily_sound_asleep_fofofo: 'adverb',
+  travel_direction_right: 'adverb',
+  travel_direction_left: 'adverb',
+  travel_direction_front: 'adverb',
+  travel_direction_back: 'adverb',
+  travel_where: 'adverb',
+  travel_there: 'adverb',
+  travel_straight: 'adverb',
+  travel_drive_safely: 'noun',
+  hospital_what_is_wrong: 'expression',
+  hospital_get_well: 'expression',
+  emergency_help: 'expression',
+  phone_later: 'adverb'
+};
+const POS_VERB_IDS = new Set([
+  'daily_deep_sleep',
+  'daily_my_clothes_smell_good',
+  'daily_my_clothes_stink',
+  'daily_clothes_suit_you',
+  'daily_have_child',
+  'daily_die_verb',
+  'daily_urinate_verb',
+  'daily_defecate_verb',
+  'daily_bathe_verb',
+  'daily_wash_dishes_verb',
+  'daily_wash_hands_verb',
+  'daily_tired_verb',
+  'daily_teach_me_swahili',
+  'daily_turn_over_word',
+  'travel_go',
+  'travel_turn_left_there',
+  'market_reduce',
+  'market_water',
+  'market_order',
+  'market_grill_word',
+  'bus_stop',
+  'bus_seat',
+  'hotel_checkout',
+  'hospital_sick',
+  'hospital_diarrhea',
+  'phone_hear',
+  'phone_slowly'
+]);
+const POS_ADJECTIVE_IDS = new Set([
+  'daily_change_clothes',
+  'market_expensive'
+]);
+const POS_EXPRESSION_USAGE_MARKERS = [
+  '日常会話 / あいさつ',
+  '日常会話 / 返事',
+  '日常会話 / 感謝',
+  '日常会話 / 丁寧に頼む',
+  '日常会話 / 呼びかけ・謝罪',
+  '日常会話 / 聞き返し',
+  '日常会話 / 質問',
+  '日常会話 / ほめる',
+  '日常会話 / 命令',
+  '救急時 / 助けを呼ぶ'
+];
+const NOUN_CLASS_HINTS = {
+  daily_hello: 'N-N',
+  daily_good_place: 'PA-KU-MU',
+  daily_guest_came: 'M-WA',
+  daily_dream_encouragement: 'N-N',
+  daily_tanzania_nane_nane: 'N-N',
+  daily_kenya_independence_day: 'U',
+  daily_use_your_brain: 'N-N',
+  daily_friend_japanese: 'N-N',
+  daily_child_word: 'M-WA',
+  daily_wife_word: 'M-WA',
+  daily_death_word: 'KI-VI',
+  daily_date_tarehe: 'N-N',
+  daily_month_word: 'M-MI',
+  daily_time_word: 'U-N',
+  daily_start_noun: 'M-MI',
+  daily_end_noun: 'M-MI',
+  daily_break_noun: 'JI-MA',
+  daily_funeral_word: 'JI-MA',
+  daily_wedding_word: 'N-N',
+  daily_dog_word: 'N-N',
+  daily_cat_word: 'N-N',
+  daily_work_word: 'N-N',
+  daily_bird_plane_word: 'N-N',
+  daily_urine_word: 'M-MI',
+  daily_stool_word: 'KI-VI',
+  daily_dishes_word: 'KI-VI',
+  daily_hands_word: 'M-MI',
+  daily_give_me_tea: 'N-N',
+  daily_kenyans_bread_tea: 'M-MI',
+  daily_mandazi_food: 'JI-MA',
+  daily_kenyan_chai_meaning: 'JI-MA',
+  daily_chai_not_plain_tea: 'JI-MA',
+  daily_mzungu_word: 'M-WA',
+  daily_called_mzungu: 'M-WA',
+  daily_pombe_forgets: 'N-N',
+  daily_water_life: 'JI-MA',
+  daily_not_ugali: 'U',
+  daily_japanese_raw_eggs: 'JI-MA',
+  daily_japanese_no_snake: 'N-N',
+  daily_kenyans_hedgehog: 'N-N',
+  daily_not_sure_chameleons: 'KI-VI',
+  daily_karate_stronger: 'N-N',
+  daily_like_yogurt: 'JI-MA',
+  daily_feed_me_food: 'M-WA',
+  daily_japanese_hot_springs: 'N-N',
+  daily_what_does_it_mean: 'N-N',
+  daily_school_book: 'KI-VI',
+  daily_school_notebook: 'JI-MA',
+  daily_school_pen: 'N-N',
+  daily_school_pencil: 'N-N',
+  daily_school_eraser: 'KI-VI',
+  daily_school_ruler: 'N-N',
+  daily_school_scissors: 'M-MI',
+  daily_school_glue: 'N-N',
+  daily_school_paper: 'N-N',
+  daily_school_bag: 'M-MI',
+  daily_school_chalk: 'N-N',
+  daily_school_board: 'U-N',
+  daily_school_desk: 'JI-MA',
+  daily_school_chair: 'KI-VI',
+  daily_school_uniform: 'N-N',
+  daily_school_classroom: 'JI-MA',
+  daily_i_am_director: 'M-WA',
+  daily_time_is_money: 'M-MI',
+  daily_did_not_eat_raw_fish: 'N-N',
+  daily_trash_word: 'N-N',
+  daily_dust_word: 'JI-MA',
+  daily_country_dusty: 'N-N',
+  daily_sun_word: 'JI-MA',
+  daily_clouds_word: 'JI-MA',
+  daily_wind_word: 'U',
+  daily_snow_word: 'N-N',
+  daily_cyclone_word: 'KI-VI',
+  daily_rain_word: 'N-N',
+  daily_fog_word: 'U',
+  daily_color_word: 'N-N',
+  daily_kumbikumbi_word: 'N-N',
+  daily_fly_word: 'N-N',
+  daily_bedbug_word: 'N-N',
+  daily_cockroach_word: 'N-N',
+  daily_scorpion_word: 'N-N',
+  daily_centipede_word: 'N-N',
+  daily_driver_ant_word: 'N-N',
+  daily_mouse_word: 'N-N',
+  daily_ant_word: 'N-N',
+  daily_termite_word: 'N-N',
+  daily_bee_word: 'N-N',
+  daily_mosquito_word: 'N-N',
+  daily_vocabulary: 'M-MI',
+  daily_verbs: 'KI-VI',
+  daily_nouns: 'JI-MA',
+  daily_expressions: 'M-MI',
+  daily_thieves_bad_people: 'M-WA',
+  daily_parents_share_love: 'U',
+  travel_map: 'N-N',
+  travel_cost: 'N-N',
+  travel_directions: 'N-N',
+  travel_meeting: 'M-MI',
+  travel_drive_safely: 'U',
+  market_price: 'N-N',
+  market_fruit: 'JI-MA',
+  market_maize: 'JI-MA',
+  market_kachumbari_roadside: 'N-N',
+  market_sugarcane_sweet: 'M-MI',
+  market_meat_word: 'N-N',
+  market_nyama_choma_meaning: 'N-N',
+  bus_station: 'N-N',
+  bus_ticket: 'N-N',
+  bus_depart: 'JI-MA',
+  bus_caught_matatu: 'N-N',
+  bus_fare_amount: 'N-N',
+  bus_fare_shillings: 'N-N',
+  hotel_room: 'KI-VI',
+  hotel_price: 'U-N',
+  hotel_reserve: 'N-N',
+  hotel_hotwater: 'M-MI',
+  hospital_doctor: 'JI-MA',
+  hospital_sore_throat: 'N-N',
+  hospital_need_diarrhea_medicine: 'N-N',
+  hospital_stomach_cramps: 'JI-MA',
+  hospital_fever: 'N-N',
+  hospital_pain: 'JI-MA',
+  hospital_allergy: 'M-MI',
+  hospital_vaccination: 'N-N',
+  emergency_help: 'M-MI',
+  emergency_police: 'N-N',
+  emergency_accident: 'N-N',
+  emergency_ambulance: 'N-N',
+  emergency_danger: 'N-N',
+  phone_call: 'N-N',
+  phone_number: 'N-N'
+};
+const NOUN_CLASS_DETAILS = {
+  'M-WA': 'M-WA [A-WA]',
+  'KI-VI': 'KI-VI [KI-VI]',
+  'M-MI': 'M-MI [U-I]',
+  'JI-MA': 'JI-MA [LI-YA]',
+  'N-N': 'N-N [I-ZI]',
+  'U-N': 'U-N [U-ZI]',
+  'U': 'U [U]',
+  'PA-KU-MU': 'PA-KU-MU [PA-KU-MU]'
+};
+const WORD_USAGE_MARKERS = [
+  '数 /',
+  '時間 /',
+  '学校 /',
+  '市場 / 野菜',
+  '市場 / 果物',
+  '市場 / 動物',
+  '市場 / 名詞',
+  '日常会話 / 名詞',
+  '日常会話 / 天気',
+  '日常会話 / 虫・小動物',
+  '日常会話 / 反復表現',
+  '日常会話 / 擬態語',
+  '日常会話 / 基本返答',
+  '日常会話 / 聞き返し'
+];
+const EXPRESSION_USAGE_MARKERS = [
+  '日常会話 / 丁寧に頼む',
+  '日常会話 / 呼びかけ・謝罪',
+  '日常会話 / 反復表現',
+  '日常会話 / 擬態語',
+  '日常会話 / 口語表現',
+  '日常会話 / 基本返答',
+  '日常会話 / 聞き返し',
+  '日常会話 / 食事の確認',
+  '日常会話 / 命令',
+  '救急時 / 助けを呼ぶ'
+];
+const PROPER_NOUN_CARD_IDS = new Set([
+  'daily_tanzania_nane_nane',
+  'daily_weekday_monday',
+  'daily_weekday_tuesday',
+  'daily_weekday_wednesday',
+  'daily_weekday_thursday',
+  'daily_weekday_friday',
+  'daily_weekday_saturday',
+  'daily_weekday_sunday'
+]);
+
+let currentCategory = localStorage.getItem(CATEGORY_STORAGE_KEY) || 'all';
+if (!CATEGORIES[currentCategory]) currentCategory = 'all';
+let currentDisplayOrder = localStorage.getItem(DISPLAY_ORDER_STORAGE_KEY) || 'random';
+if (!DISPLAY_ORDERS[currentDisplayOrder]) currentDisplayOrder = 'random';
+let currentTestChoiceCount = Number(localStorage.getItem(TEST_CHOICE_COUNT_STORAGE_KEY)) || 4;
+if (!TEST_CHOICE_COUNT_OPTIONS.includes(currentTestChoiceCount)) currentTestChoiceCount = 4;
+const savedFrontGrammarHints = localStorage.getItem(FRONT_GRAMMAR_HINTS_STORAGE_KEY) || localStorage.getItem(LEGACY_FRONT_POS_VISIBILITY_STORAGE_KEY);
+let showFrontGrammarHints = savedFrontGrammarHints !== 'hide';
+
+let currentMode = 'learn';
+let sessionCards = [];
+let currentIndex = 0;
+let isFlipped = false;
+let reviewedToday = 0;
+let sessionReviewedKeys = new Set();
+let testCards = [];
+let testIndex = 0;
+let testCorrect = 0;
+let testAnswered = false;
+
+function loadData() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+  catch { return {}; }
+}
+function saveData(data) { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+function getCardKey(item) { return item.id; }
+function getDisplaySwahili(item) {
+  const text = item.sw.trim();
+  const keepNaturalSentenceCase = item.type === 'expression' || /[.?!！]$/.test(text);
+  if (keepNaturalSentenceCase || PROPER_NOUN_CARD_IDS.has(item.id)) return item.sw;
+  return item.sw.toLowerCase();
+}
+function getNounClass(item) {
+  return item.nounClass || NOUN_CLASS_HINTS[item.id] || '';
+}
+function getGrammarNote(item) {
+  const nounClass = getNounClass(item);
+  const nounClassDetail = NOUN_CLASS_DETAILS[nounClass] || nounClass;
+  const parts = [];
+  if (item.infinitive) parts.push(`不定形 ${item.infinitive}`);
+  if (item.note) parts.push(item.note);
+  if (nounClass) parts.push(`名詞クラス (${nounClassDetail})`);
+  return parts.join(' / ');
+}
+function getQuality(item) {
+  if (item.quality && QUALITY_LABELS[item.quality]) return item.quality;
+  if (QUALITY_C_IDS.has(item.id)) return 'C';
+  if (QUALITY_B_IDS.has(item.id)) return 'B';
+  if (QUALITY_B_USAGE_MARKERS.some(marker => item.usage.startsWith(marker))) return 'B';
+  return 'A';
+}
+function getPartOfSpeech(item) {
+  if (item.pos && POS_LABELS[item.pos]) return item.pos;
+  if (POS_BY_ID[item.id]) return POS_BY_ID[item.id];
+  if (item.cat === 'number' || item.usage.startsWith('数 /')) return 'number';
+  if (item.infinitive) return 'verb';
+  if (POS_VERB_IDS.has(item.id)) return 'verb';
+  if (POS_ADJECTIVE_IDS.has(item.id)) return 'adjective';
+  if (POS_EXPRESSION_USAGE_MARKERS.some(marker => item.usage.startsWith(marker))) return 'expression';
+  if (item.type === 'expression') return 'expression';
+  if (/[?!！]$/.test(item.sw.trim())) return 'expression';
+  if (getNounClass(item)) return 'noun';
+  if (/(下痢する|買う|行く|聞く|聞こえる|話す|言う|眠る|教える|学ばせる|曲がる|減らして|降ろして|裏返す|ひっくり返す|食べられる|出発する|立ち去る|痛む|死ぬ|枯れる)/.test(item.jp)) return 'verb';
+  if (/(よい|高い|汚い|寒い|暑い|危険|上手|赤|青|黄色|緑|黒|白|茶色|紫|金色|銀色|銅色)/.test(item.jp)) return 'adjective';
+  if (/(ゆっくり|早く|こっそり|少しずつ|また|あとで|前|後ろ|右|左|そこへ|まっすぐ)/.test(item.jp)) return 'adverb';
+  if (item.sw.includes(' ')) return 'expression';
+  return 'noun';
+}
+function applyPosBadge(element, pos) {
+  const meta = POS_LABELS[pos] || POS_LABELS.noun;
+  element.textContent = meta.label;
+  element.title = meta.description;
+  element.className = `pos-badge pos-${pos}`;
+}
+function getTextWeight(text) {
+  return [...String(text || '')].reduce((sum, char) => {
+    return sum + (/[\u3040-\u30ff\u3400-\u9fff]/.test(char) ? 1.85 : 1);
+  }, 0);
+}
+function getBackDensity(item, grammarNote) {
+  return getTextWeight(item.jp) * 0.7
+    + getTextWeight(grammarNote) * 0.45
+    + getTextWeight(item.example || '') * 0.85
+    + getTextWeight(item.usage) * 0.35;
+}
+function getGrammarCategory(item) {
+  if (OTHER_CATEGORY_IDS.has(item.id)) return 'other';
+  const pos = getPartOfSpeech(item);
+  if (pos === 'noun') return 'noun';
+  if (pos === 'verb') return 'verb';
+  if (pos === 'adjective' || pos === 'adverb') return 'modifier';
+  return 'other';
+}
+function getPhrasesByCategory(category = currentCategory) {
+  if (category === 'all') return PHRASES;
+  if (CATEGORIES[category]) return PHRASES.filter(item => getGrammarCategory(item) === category);
+  return PHRASES;
+}
+function getActivePhrases() {
+  return getPhrasesByCategory();
+}
+function getScopeLabel() {
+  return CATEGORIES[currentCategory] || CATEGORIES.all;
+}
+function getScopeUnit() {
+  return 'カード';
+}
+const swahiliCollator = new Intl.Collator('sw', { sensitivity: 'base', numeric: true });
+function compareSwahiliCards(a, b) {
+  const result = swahiliCollator.compare(a.sw, b.sw);
+  return result || a.id.localeCompare(b.id);
+}
+function orderStudyCards(items) {
+  if (currentDisplayOrder === 'asc') return [...items].sort(compareSwahiliCards);
+  if (currentDisplayOrder === 'desc') return [...items].sort((a, b) => compareSwahiliCards(b, a));
+  return shuffle(items);
+}
+function shuffle(items) {
+  const arr = [...items];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+function updateCard(item, correct) {
+  const data = loadData();
+  const key = getCardKey(item);
+  const row = data[key] || { seen: 0, correct: 0, mastered: false };
+  row.seen += 1;
+  if (correct) row.correct += 1;
+  row.mastered = row.correct >= 3;
+  data[key] = row;
+  saveData(data);
+}
+function updateModeButtons() {
+  document.getElementById('learn-mode-btn').classList.toggle('active', currentMode === 'learn');
+  document.getElementById('test-mode-btn').classList.toggle('active', currentMode === 'test');
+}
+function buildCategoryButtons() {
+  const wrap = document.getElementById('category-buttons');
+  wrap.innerHTML = '';
+  Object.entries(CATEGORIES).forEach(([key, label]) => {
+    const count = getPhrasesByCategory(key).length;
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'option-btn category-btn';
+    button.dataset.category = key;
+    button.innerHTML = `${label}<span>${count}${getScopeUnit()}</span>`;
+    button.onclick = () => setCategory(key);
+    wrap.appendChild(button);
+  });
+}
+function updateCategoryButtons() {
+  document.querySelectorAll('.category-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.category === currentCategory);
+  });
+}
+function updateDisplayOrderButtons() {
+  document.querySelectorAll('.display-order-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.displayOrder === currentDisplayOrder);
+  });
+}
+function updateTestChoiceButtons() {
+  document.querySelectorAll('.test-choice-count-btn').forEach(btn => {
+    btn.classList.toggle('active', Number(btn.dataset.testChoices) === currentTestChoiceCount);
+  });
+}
+function updateFrontGrammarButtons() {
+  document.querySelectorAll('.front-grammar-btn').forEach(btn => {
+    btn.classList.toggle('active', (btn.dataset.frontGrammar === 'show') === showFrontGrammarHints);
+  });
+}
+function updateFrontGrammarVisibility() {
+  const posEl = document.getElementById('pos-front');
+  const nounClassEl = document.getElementById('noun-class-front');
+  const badgesEl = document.getElementById('front-badges');
+  posEl.hidden = !showFrontGrammarHints;
+  nounClassEl.hidden = !showFrontGrammarHints || nounClassEl.dataset.hasNounClass !== 'true';
+  badgesEl.hidden = !showFrontGrammarHints;
+}
+function updateStats() {
+  const data = loadData();
+  const active = getActivePhrases();
+  const mastered = active.filter(item => data[getCardKey(item)]?.mastered).length;
+  document.getElementById('stat-today').textContent = reviewedToday;
+  document.getElementById('stat-mastered').textContent = mastered;
+  document.getElementById('scope-text').textContent = currentMode === 'test'
+    ? `テスト: ${testCorrect}問正解`
+    : `${getScopeLabel()} / ${active.length}${getScopeUnit()}`;
+}
+function setCategory(category) {
+  currentCategory = CATEGORIES[category] ? category : 'all';
+  localStorage.setItem(CATEGORY_STORAGE_KEY, currentCategory);
+  reviewedToday = 0;
+  updateCategoryButtons();
+  restartCurrentMode();
+}
+function setDisplayOrder(order) {
+  currentDisplayOrder = DISPLAY_ORDERS[order] ? order : 'random';
+  localStorage.setItem(DISPLAY_ORDER_STORAGE_KEY, currentDisplayOrder);
+  reviewedToday = 0;
+  updateDisplayOrderButtons();
+  if (currentMode === 'learn') startSession();
+}
+function setTestChoiceCount(count) {
+  currentTestChoiceCount = TEST_CHOICE_COUNT_OPTIONS.includes(Number(count)) ? Number(count) : 4;
+  localStorage.setItem(TEST_CHOICE_COUNT_STORAGE_KEY, String(currentTestChoiceCount));
+  updateTestChoiceButtons();
+  if (currentMode === 'test') startTestSession();
+}
+function setFrontGrammarVisibility(visible) {
+  showFrontGrammarHints = Boolean(visible);
+  localStorage.setItem(FRONT_GRAMMAR_HINTS_STORAGE_KEY, showFrontGrammarHints ? 'show' : 'hide');
+  updateFrontGrammarButtons();
+  updateFrontGrammarVisibility();
+}
+function showSettingsView() {
+  buildCategoryButtons();
+  updateCategoryButtons();
+  updateDisplayOrderButtons();
+  updateTestChoiceButtons();
+  updateFrontGrammarButtons();
+  updateFrontGrammarVisibility();
+  updateStats();
+  document.getElementById('learn-view').hidden = true;
+  document.getElementById('settings-view').hidden = false;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function showLearnView() {
+  document.getElementById('settings-view').hidden = true;
+  document.getElementById('learn-view').hidden = false;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function restartCurrentMode() {
+  if (currentMode === 'test') startTestSession();
+  else startSession();
+}
+function startSession() {
+  currentMode = 'learn';
+  updateModeButtons();
+  updateTestChoiceButtons();
+  document.getElementById('learn-view').classList.remove('test-mode');
+  const active = getActivePhrases();
+  sessionCards = orderStudyCards(active);
+  currentIndex = 0;
+  isFlipped = false;
+  sessionReviewedKeys = new Set();
+  document.getElementById('session-complete').style.display = 'none';
+  document.getElementById('study-prompt').textContent = 'タップすると日本語が出るよ';
+  document.getElementById('study-prompt').style.display = 'block';
+  document.getElementById('card-container').style.display = 'block';
+  document.getElementById('test-panel').style.display = 'none';
+  document.getElementById('swipe-msg').style.display = 'block';
+  if (!sessionCards.length) {
+    showEmptySet('この条件の学習カードはありません');
+    updateStats();
+    return;
+  }
+  showCard();
+  updateStats();
+}
+function showCard() {
+  if (currentIndex >= sessionCards.length || sessionCards.length === 0) { showComplete(); return; }
+  const item = sessionCards[currentIndex];
+  isFlipped = false;
+  document.getElementById('card').classList.remove('flipped');
+  document.getElementById('sw-text').textContent = getDisplaySwahili(item);
+  const pos = getPartOfSpeech(item);
+  applyPosBadge(document.getElementById('pos-front'), pos);
+  applyPosBadge(document.getElementById('pos-back'), pos);
+  const nounClass = getNounClass(item);
+  const nounClassEl = document.getElementById('noun-class-front');
+  nounClassEl.textContent = nounClass ? `(${nounClass})` : '';
+  nounClassEl.dataset.hasNounClass = nounClass ? 'true' : 'false';
+  updateFrontGrammarVisibility();
+  document.getElementById('meaning-text').textContent = item.jp;
+  const grammarEl = document.getElementById('grammar-note');
+  const grammarNote = getGrammarNote(item);
+  grammarEl.textContent = grammarNote;
+  grammarEl.hidden = !grammarNote;
+  const exampleEl = document.getElementById('example-text');
+  exampleEl.textContent = item.example || '';
+  exampleEl.hidden = !item.example;
+  document.getElementById('usage-text').textContent = item.usage;
+  const backEl = document.querySelector('.card-back');
+  const backDensity = getBackDensity(item, grammarNote);
+  const needsCompactBack = backDensity > 70 || item.jp.length > 10 || (grammarNote && item.example);
+  backEl.classList.toggle('compact-back', needsCompactBack);
+  backEl.classList.toggle('dense-back', backDensity > 110);
+  const quality = getQuality(item);
+  const qualityMeta = QUALITY_LABELS[quality];
+  const qualityEl = document.getElementById('quality-badge');
+  qualityEl.textContent = `${quality} ${qualityMeta.label}`;
+  qualityEl.title = qualityMeta.description;
+  qualityEl.className = `quality-badge quality-${quality.toLowerCase()}`;
+  document.getElementById('swipe-msg').textContent = currentIndex > 0 ? '← 前のカード　　右へスワイプ → わかった' : '右へスワイプ → わかった';
+  document.getElementById('progress-fill').style.width = `${(currentIndex / sessionCards.length) * 100}%`;
+  document.getElementById('progress-text').textContent = `${currentIndex} / ${sessionCards.length}`;
+}
+function showEmptySet(message) {
+  document.getElementById('study-prompt').textContent = message;
+  document.getElementById('study-prompt').style.display = 'block';
+  document.getElementById('card-container').style.display = 'none';
+  document.getElementById('test-panel').style.display = 'none';
+  document.getElementById('swipe-msg').style.display = 'block';
+  document.getElementById('swipe-msg').textContent = '設定で「全カード」または別のカテゴリを選んでください';
+  document.getElementById('session-complete').style.display = 'none';
+  document.getElementById('progress-fill').style.width = '0%';
+  document.getElementById('progress-text').textContent = '0 / 0';
+}
+function flipCard() {
+  isFlipped = !isFlipped;
+  document.getElementById('card').classList.toggle('flipped', isFlipped);
+}
+function rate(correct) {
+  if (currentIndex >= sessionCards.length) return;
+  const item = sessionCards[currentIndex];
+  const key = getCardKey(item);
+  if (!sessionReviewedKeys.has(key)) {
+    updateCard(item, correct);
+    reviewedToday++;
+    sessionReviewedKeys.add(key);
+  }
+  currentIndex++;
+  setTimeout(() => { showCard(); updateStats(); }, 220);
+}
+function showPreviousCard() {
+  if (currentIndex <= 0) return;
+  currentIndex--;
+  showCard();
+  updateStats();
+}
+function startTestSession() {
+  currentMode = 'test';
+  updateModeButtons();
+  updateTestChoiceButtons();
+  document.getElementById('learn-view').classList.add('test-mode');
+  testCards = shuffle(getActivePhrases());
+  testIndex = 0;
+  testCorrect = 0;
+  testAnswered = false;
+  reviewedToday = 0;
+  sessionReviewedKeys = new Set();
+  document.getElementById('session-complete').style.display = 'none';
+  document.getElementById('study-prompt').style.display = 'none';
+  document.getElementById('card-container').style.display = 'none';
+  document.getElementById('swipe-msg').style.display = 'none';
+  document.getElementById('test-panel').style.display = 'block';
+  if (!testCards.length) {
+    showEmptySet('この条件のテストカードはありません');
+    updateStats();
+    return;
+  }
+  showTestQuestion();
+  updateStats();
+}
+function buildTestChoices(correctItem) {
+  const active = getActivePhrases();
+  const choiceCount = Math.max(2, Math.min(currentTestChoiceCount, active.length || currentTestChoiceCount));
+  const seen = new Set([correctItem.jp]);
+  const scoped = active.filter(item => item.id !== correctItem.id && !seen.has(item.jp) && seen.add(item.jp));
+  const fallbackSeen = new Set([correctItem.jp, ...scoped.map(item => item.jp)]);
+  const fallback = PHRASES.filter(item => item.id !== correctItem.id && !fallbackSeen.has(item.jp) && fallbackSeen.add(item.jp));
+  const distractors = shuffle([...scoped, ...fallback]).slice(0, Math.max(0, choiceCount - 1));
+  return shuffle([{ item: correctItem, correct: true }, ...distractors.map(item => ({ item, correct: false }))]);
+}
+function showTestQuestion() {
+  if (testIndex >= testCards.length || testCards.length === 0) { showTestComplete(); return; }
+  const item = testCards[testIndex];
+  testAnswered = false;
+  document.querySelector('.test-word-card')?.classList.remove('wrong-cue');
+  document.getElementById('test-word-text').textContent = getDisplaySwahili(item);
+  document.getElementById('test-feedback').textContent = '';
+  document.getElementById('test-next-btn').style.display = 'none';
+  const grid = document.getElementById('test-choice-grid');
+  grid.innerHTML = '';
+  buildTestChoices(item).forEach(choice => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'test-choice-card';
+    btn.textContent = choice.item.jp;
+    btn.dataset.correct = choice.correct ? 'true' : 'false';
+    btn.onclick = () => answerTestChoice(btn, item);
+    grid.appendChild(btn);
+  });
+  document.getElementById('progress-fill').style.width = `${(testIndex / testCards.length) * 100}%`;
+  document.getElementById('progress-text').textContent = `${testIndex} / ${testCards.length}`;
+  updateStats();
+}
+function triggerWrongAnswerCue() {
+  const card = document.querySelector('.test-word-card');
+  if (typeof navigator.vibrate === 'function') navigator.vibrate([80, 40, 80, 40, 120]);
+  if (card) {
+    card.classList.remove('wrong-cue');
+    void card.offsetWidth;
+    card.classList.add('wrong-cue');
+  }
+}
+function answerTestChoice(button, item) {
+  if (testAnswered) return;
+  testAnswered = true;
+  const correct = button.dataset.correct === 'true';
+  if (correct) testCorrect++;
+  if (!correct) triggerWrongAnswerCue();
+  document.querySelectorAll('.test-choice-card').forEach(btn => {
+    btn.disabled = true;
+    if (btn.dataset.correct === 'true') btn.classList.add('correct');
+  });
+  if (!correct) button.classList.add('wrong');
+  const key = getCardKey(item);
+  if (!sessionReviewedKeys.has(key)) {
+    updateCard(item, correct);
+    reviewedToday++;
+    sessionReviewedKeys.add(key);
+  }
+  document.getElementById('test-feedback').textContent = correct ? '正解！' : `正解は「${item.jp}」`;
+  document.getElementById('test-next-btn').style.display = 'block';
+  updateStats();
+}
+function showNextTestQuestion() {
+  if (!testAnswered) return;
+  testIndex++;
+  showTestQuestion();
+}
+function showComplete() {
+  if (!sessionCards.length) return;
+  startSession();
+}
+function showTestComplete() {
+  document.getElementById('study-prompt').style.display = 'none';
+  document.getElementById('card-container').style.display = 'none';
+  document.getElementById('test-panel').style.display = 'none';
+  document.getElementById('swipe-msg').style.display = 'none';
+  document.getElementById('session-complete').style.display = 'block';
+  document.getElementById('progress-fill').style.width = '100%';
+  document.getElementById('progress-text').textContent = `${testCards.length} / ${testCards.length}`;
+  const misses = Math.max(0, testCards.length - testCorrect);
+  document.getElementById('complete-icon').textContent = testCards.length && misses === 0 ? '◎' : '✓';
+  document.getElementById('complete-title').textContent = 'サクサクテスト完了！';
+  document.getElementById('cs-reviewed-label').textContent = '出題';
+  document.getElementById('cs-mastered-label').textContent = '正解';
+  document.getElementById('cs-due-label').textContent = 'ミス';
+  document.getElementById('restart-btn').textContent = 'もう一度テスト';
+  document.getElementById('cs-reviewed').textContent = testCards.length;
+  document.getElementById('cs-mastered').textContent = testCorrect;
+  document.getElementById('cs-due').textContent = misses;
+  document.getElementById('complete-msg').textContent = misses === 0
+    ? `全問正解！満点です。\n「${getScopeLabel()}」${testCards.length}カードを答えられました。`
+    : `「${getScopeLabel()}」${testCards.length}カード中 ${testCorrect}問正解です。\n間違えたカードは、もう一度確認しましょう。`;
+}
+function isControlTarget(target) {
+  return Boolean(target.closest('button, a, input, select, textarea, label'));
+}
+let touchStartX = 0;
+let touchStartY = 0;
+let lastTouchTime = 0;
+let touchStartedOnControl = false;
+const learnViewEl = document.getElementById('learn-view');
+learnViewEl.addEventListener('click', event => {
+  if (currentMode !== 'learn') return;
+  if (isControlTarget(event.target)) return;
+  if (document.getElementById('session-complete').style.display === 'block') return;
+  if (Date.now() - lastTouchTime < 450) return;
+  flipCard();
+});
+learnViewEl.addEventListener('touchstart', event => {
+  if (currentMode !== 'learn') return;
+  touchStartedOnControl = isControlTarget(event.target);
+  if (touchStartedOnControl) return;
+  touchStartX = event.changedTouches[0].clientX;
+  touchStartY = event.changedTouches[0].clientY;
+}, { passive: true });
+learnViewEl.addEventListener('touchend', event => {
+  if (currentMode !== 'learn') return;
+  if (touchStartedOnControl) return;
+  if (document.getElementById('session-complete').style.display === 'block') return;
+  const dx = event.changedTouches[0].clientX - touchStartX;
+  const dy = event.changedTouches[0].clientY - touchStartY;
+  if (Math.abs(dx) < 10 && Math.abs(dy) < 10) {
+    lastTouchTime = Date.now();
+    flipCard();
+    return;
+  }
+  if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+    lastTouchTime = Date.now();
+    dx > 0 ? rate(true) : showPreviousCard();
+  }
+}, { passive: true });
+document.addEventListener('keydown', event => {
+  if (currentMode === 'test') {
+    if (event.key === 'Enter' && testAnswered) {
+      event.preventDefault();
+      showNextTestQuestion();
+    }
+    return;
+  }
+  if (event.key === ' ' || event.key === 'Enter' || event.key === 'ArrowUp') { event.preventDefault(); flipCard(); }
+  if (event.key === 'ArrowRight') { event.preventDefault(); rate(true); }
+  if (event.key === 'ArrowLeft') { event.preventDefault(); showPreviousCard(); }
+});
+buildCategoryButtons();
+startSession();
+</script>
+</body>
+</html>
