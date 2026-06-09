@@ -598,7 +598,7 @@
   <div class="settings-head">
     <div>
       <div class="settings-title">設定</div>
-      <div class="settings-lead">品詞カテゴリ、文法ヒント、テストの選択肢数を変えられます。</div>
+      <div class="settings-lead">品詞カテゴリ、出題範囲、文法ヒント、テストの選択肢数、バックアップを扱えます。</div>
     </div>
     <button class="back-btn" type="button" onclick="showLearnView()">戻る</button>
   </div>
@@ -636,6 +636,25 @@
       <button class="option-btn test-choice-count-btn active" type="button" data-test-choices="4" onclick="setTestChoiceCount(4)">4択</button>
     </div>
     <div class="note">不正解時はカードが短く揺れます。対応端末では振動も試みます。</div>
+  </div>
+
+  <div class="panel">
+    <div class="section-title">出題範囲</div>
+    <div class="option-grid">
+      <button class="option-btn study-scope-btn active" type="button" data-study-scope="all" onclick="setStudyScope('all')">全カード<span>標準</span></button>
+      <button class="option-btn study-scope-btn" type="button" data-study-scope="unmastered" onclick="setStudyScope('unmastered')">未習得のみ<span>習得済みはお休み</span></button>
+    </div>
+    <div class="note">「未習得のみ」にすると、3回正解して習得済みになったカードは出題されなくなります。</div>
+  </div>
+
+  <div class="panel">
+    <div class="section-title">学習データのバックアップ</div>
+    <div class="option-grid">
+      <button class="option-btn" type="button" onclick="exportProgressData()">書き出す<span>JSONを保存</span></button>
+      <button class="option-btn" type="button" onclick="document.getElementById('import-file-input').click()">読み込む<span>機種変・復元用</span></button>
+    </div>
+    <input type="file" id="import-file-input" accept="application/json,.json" hidden onchange="importProgressData(event)">
+    <div class="note">学習記録は今お使いの端末（ブラウザ）の中にだけ保存されています。機種変更や履歴消去に備えて、ときどき書き出しておくと安心です。</div>
   </div>
 
   <div class="panel">
@@ -968,6 +987,89 @@ const PHRASES = [
   { id:'phone_hear', cat:'phone', sw:'sikia', read:'クシキア', jp:'聞く：聞こえる', usage:'電話 / 聞き返し', type:'word', infinitive:'kusikia', example:'例: Sikusikii vizuri.\nよく聞こえません' },
   { id:'phone_slowly', cat:'phone', sw:'sema', read:'クセマ', jp:'話す：言う', usage:'電話 / 聞き返し', type:'word', infinitive:'kusema', example:'例: Tafadhali sema polepole.\nゆっくり話してください' },
   { id:'phone_later', cat:'phone', sw:'baadaye', read:'バアダイェ', jp:'あとで：後ほど', usage:'電話 / 連絡', type:'word', example:'例: Nitakupigia baadaye.\nあとで電話します' },
+  { id:'market_veg_general', cat:'market', sw:'mboga', read:'ムボガ', jp:'野菜', usage:'市場 / 野菜', type:'word', pos:'noun', nounClass:'N-N', note:'単複同じ / mboga za majani = 葉物野菜', example:'例: Ninataka kununua mboga.\n野菜を買いたいです' },
+  { id:'market_veg_tomato', cat:'market', sw:'nyanya', read:'ニャニャ', jp:'トマト', usage:'市場 / 野菜', type:'word', pos:'noun', nounClass:'N-N', note:'「おばあちゃん」の意味もある', example:'例: Nyanya hizi ni bei gani?\nこのトマトはいくらですか' },
+  { id:'market_veg_onion', cat:'market', sw:'kitunguu', read:'キトゥングウ', jp:'玉ねぎ', usage:'市場 / 野菜', type:'word', pos:'noun', nounClass:'KI-VI', note:'複数 vitunguu / にんにくは kitunguu saumu' },
+  { id:'market_veg_carrot', cat:'market', sw:'karoti', read:'カロティ', jp:'にんじん', usage:'市場 / 野菜', type:'word', pos:'noun', nounClass:'N-N' },
+  { id:'market_veg_potato', cat:'market', sw:'kiazi', read:'キアジ', jp:'じゃがいも：いも', usage:'市場 / 野菜', type:'word', pos:'noun', nounClass:'KI-VI', note:'複数 viazi（こちらをよく使う）/ さつまいもは viazi vitamu', example:'例: Nunua viazi sokoni.\n市場でじゃがいもを買って' },
+  { id:'market_veg_maize', cat:'market', sw:'mahindi', read:'マヒンディ', jp:'とうもろこし', usage:'市場 / 野菜', type:'word', pos:'noun', nounClass:'JI-MA', note:'複数形でよく使う / 焼きとうもろこしは屋台の定番', example:'例: Mahindi ya kuchoma ni matamu.\n焼きとうもろこしはおいしいです' },
+  { id:'market_veg_beans', cat:'market', sw:'maharagwe', read:'マハラグウェ', jp:'豆：いんげん豆', usage:'市場 / 野菜', type:'word', pos:'noun', nounClass:'JI-MA', note:'複数形でよく使う / 豆と米の煮込みは定番料理' },
+  { id:'market_veg_chili', cat:'market', sw:'pilipili', read:'ピリピリ', jp:'唐辛子：こしょう', usage:'市場 / 野菜', type:'word', pos:'noun', nounClass:'N-N', example:'例: Usiweke pilipili nyingi.\n唐辛子を入れすぎないで' },
+  { id:'market_veg_bell_pepper', cat:'market', sw:'pilipili hoho', read:'ピリピリ ホホ', jp:'ピーマン：パプリカ', usage:'市場 / 野菜', type:'compound', pos:'noun', nounClass:'N-N', note:'辛くない pilipili' },
+  { id:'market_veg_cabbage', cat:'market', sw:'kabichi', read:'カビチ', jp:'キャベツ', usage:'市場 / 野菜', type:'word', pos:'noun', nounClass:'N-N' },
+  { id:'market_veg_mchicha', cat:'market', sw:'mchicha', read:'ムチチャ', jp:'青菜：アフリカほうれん草', usage:'市場 / 野菜', type:'word', pos:'noun', nounClass:'M-MI', note:'複数 michicha / ほうれん草に似た葉物' },
+  { id:'market_veg_cucumber', cat:'market', sw:'tango', read:'タンゴ', jp:'きゅうり', usage:'市場 / 野菜', type:'word', pos:'noun', nounClass:'JI-MA', note:'複数 matango' },
+  { id:'market_veg_okra', cat:'market', sw:'bamia', read:'バミア', jp:'オクラ', usage:'市場 / 野菜', type:'word', pos:'noun', nounClass:'N-N' },
+  { id:'market_fruit_banana', cat:'market', sw:'ndizi', read:'ンディジ', jp:'バナナ', usage:'市場 / 果物', type:'word', pos:'noun', nounClass:'N-N', note:'単複同じ / 料理用バナナも ndizi', example:'例: Ndizi tano, tafadhali.\nバナナを5本ください' },
+  { id:'market_fruit_mango', cat:'market', sw:'embe', read:'エンベ', jp:'マンゴー', usage:'市場 / 果物', type:'word', pos:'noun', nounClass:'JI-MA', note:'複数 maembe', example:'例: Embe hili ni tamu sana.\nこのマンゴーはとても甘いです' },
+  { id:'market_fruit_orange', cat:'market', sw:'chungwa', read:'チュングワ', jp:'オレンジ', usage:'市場 / 果物', type:'word', pos:'noun', nounClass:'JI-MA', note:'複数 machungwa' },
+  { id:'market_fruit_pineapple', cat:'market', sw:'nanasi', read:'ナナシ', jp:'パイナップル', usage:'市場 / 果物', type:'word', pos:'noun', nounClass:'JI-MA', note:'複数 mananasi' },
+  { id:'market_fruit_papaya', cat:'market', sw:'papai', read:'パパイ', jp:'パパイヤ', usage:'市場 / 果物', type:'word', pos:'noun', nounClass:'JI-MA', note:'複数 mapapai' },
+  { id:'market_fruit_avocado', cat:'market', sw:'parachichi', read:'パラチチ', jp:'アボカド', usage:'市場 / 果物', type:'word', pos:'noun', nounClass:'JI-MA', note:'複数 maparachichi' },
+  { id:'market_fruit_watermelon', cat:'market', sw:'tikiti maji', read:'ティキティ マジ', jp:'スイカ', usage:'市場 / 果物', type:'compound', pos:'noun', nounClass:'JI-MA', note:'複数 matikiti maji / tikiti だけだと「切符」' },
+  { id:'market_fruit_grape', cat:'market', sw:'zabibu', read:'ザビブ', jp:'ぶどう：レーズン', usage:'市場 / 果物', type:'word', pos:'noun', nounClass:'N-N' },
+  { id:'market_fruit_lemon', cat:'market', sw:'limau', read:'リマウ', jp:'レモン', usage:'市場 / 果物', type:'word', pos:'noun', nounClass:'JI-MA', note:'複数 malimau' },
+  { id:'market_fruit_guava', cat:'market', sw:'pera', read:'ペラ', jp:'グアバ', usage:'市場 / 果物', type:'word', pos:'noun', nounClass:'JI-MA', note:'複数 mapera' },
+  { id:'market_fruit_coconut', cat:'market', sw:'nazi', read:'ナジ', jp:'ココナッツ（熟した実）', usage:'市場 / 果物', type:'word', pos:'noun', nounClass:'N-N', note:'飲み頃の若い実は dafu' },
+  { id:'animal_general', cat:'daily', sw:'mnyama', read:'ムニャマ', jp:'動物', usage:'動物 / サファリ', type:'word', pos:'noun', nounClass:'M-WA', note:'複数 wanyama', example:'例: Tuliona wanyama wengi.\nたくさんの動物を見ました' },
+  { id:'animal_lion', cat:'daily', sw:'simba', read:'シンバ', jp:'ライオン', usage:'動物 / サファリ', type:'word', pos:'noun', nounClass:'N-N', note:'単複同じ', example:'例: Simba analala mchana.\nライオンは昼間寝ています' },
+  { id:'animal_elephant', cat:'daily', sw:'tembo', read:'テンボ', jp:'ゾウ', usage:'動物 / サファリ', type:'word', pos:'noun', nounClass:'N-N', note:'ndovu とも言う' },
+  { id:'animal_giraffe', cat:'daily', sw:'twiga', read:'トゥウィガ', jp:'キリン', usage:'動物 / サファリ', type:'word', pos:'noun', nounClass:'N-N' },
+  { id:'animal_leopard', cat:'daily', sw:'chui', read:'チュイ', jp:'ヒョウ', usage:'動物 / サファリ', type:'word', pos:'noun', nounClass:'N-N' },
+  { id:'animal_cheetah', cat:'daily', sw:'duma', read:'ドゥマ', jp:'チーター', usage:'動物 / サファリ', type:'word', pos:'noun', nounClass:'N-N' },
+  { id:'animal_rhino', cat:'daily', sw:'kifaru', read:'キファル', jp:'サイ', usage:'動物 / サファリ', type:'word', pos:'noun', nounClass:'KI-VI', note:'複数 vifaru' },
+  { id:'animal_hippo', cat:'daily', sw:'kiboko', read:'キボコ', jp:'カバ', usage:'動物 / サファリ', type:'word', pos:'noun', nounClass:'KI-VI', note:'複数 viboko' },
+  { id:'animal_zebra', cat:'daily', sw:'punda milia', read:'プンダ ミリア', jp:'シマウマ', usage:'動物 / サファリ', type:'compound', pos:'noun', nounClass:'N-N', note:'punda（ロバ）＋ milia（縞）' },
+  { id:'animal_baboon', cat:'daily', sw:'nyani', read:'ニャニ', jp:'ヒヒ', usage:'動物 / サファリ', type:'word', pos:'noun', nounClass:'N-N' },
+  { id:'animal_monkey', cat:'daily', sw:'tumbili', read:'トゥンビリ', jp:'サル', usage:'動物 / サファリ', type:'word', pos:'noun', nounClass:'N-N' },
+  { id:'animal_hyena', cat:'daily', sw:'fisi', read:'フィシ', jp:'ハイエナ', usage:'動物 / サファリ', type:'word', pos:'noun', nounClass:'N-N' },
+  { id:'animal_crocodile', cat:'daily', sw:'mamba', read:'マンバ', jp:'ワニ', usage:'動物 / サファリ', type:'word', pos:'noun', nounClass:'N-N' },
+  { id:'animal_cow', cat:'daily', sw:'ng\'ombe', read:'ンゴンベ', jp:'牛', usage:'動物 / 家畜', type:'word', pos:'noun', nounClass:'N-N', note:'単複同じ', example:'例: Ng\'ombe wanakula nyasi.\n牛が草を食べています' },
+  { id:'animal_goat', cat:'daily', sw:'mbuzi', read:'ムブジ', jp:'ヤギ', usage:'動物 / 家畜', type:'word', pos:'noun', nounClass:'N-N', note:'単複同じ / nyama choma の定番' },
+  { id:'animal_sheep', cat:'daily', sw:'kondoo', read:'コンドオ', jp:'羊', usage:'動物 / 家畜', type:'word', pos:'noun', nounClass:'N-N' },
+  { id:'animal_chicken', cat:'daily', sw:'kuku', read:'クク', jp:'ニワトリ：鶏肉', usage:'動物 / 家畜', type:'word', pos:'noun', nounClass:'N-N', example:'例: Kuku wa kienyeji ni mtamu.\n地鶏はおいしいです' },
+  { id:'animal_donkey', cat:'daily', sw:'punda', read:'プンダ', jp:'ロバ', usage:'動物 / 家畜', type:'word', pos:'noun', nounClass:'N-N', note:'荷物運びの相棒' },
+  { id:'animal_fish', cat:'daily', sw:'samaki', read:'サマキ', jp:'魚', usage:'動物 / 家畜・市場', type:'word', pos:'noun', nounClass:'N-N', note:'単複同じ', example:'例: Ninapenda samaki wa kukaanga.\n魚のフライが好きです' },
+  { id:'tribe_word', cat:'daily', sw:'kabila', read:'カビラ', jp:'民族：部族', usage:'文化 / 民族', type:'word', pos:'noun', nounClass:'JI-MA', note:'複数 makabila', example:'例: Kenya ina makabila mengi.\nケニアには多くの民族がいます' },
+  { id:'tribe_kikuyu', cat:'daily', sw:'Wakikuyu', read:'ワキクユ', jp:'キクユの人々', usage:'ケニア / 民族', type:'word', pos:'noun', nounClass:'M-WA', quality:'B', note:'単数 Mkikuyu / ケニア最大の民族・中央高地', example:'例: Wakikuyu wengi wanaishi karibu na Mlima Kenya.\nキクユの人々の多くはケニア山の近くに住んでいます' },
+  { id:'tribe_luo', cat:'daily', sw:'Wajaluo', read:'ワジャルオ', jp:'ルオの人々', usage:'ケニア / 民族', type:'word', pos:'noun', nounClass:'M-WA', quality:'B', note:'単数 Mjaluo / ビクトリア湖周辺・漁業で有名' },
+  { id:'tribe_luhya', cat:'daily', sw:'Waluhya', read:'ワルヒヤ', jp:'ルヒヤの人々', usage:'ケニア / 民族', type:'word', pos:'noun', nounClass:'M-WA', quality:'B', note:'単数 Mluhya / ケニア西部' },
+  { id:'tribe_kalenjin', cat:'daily', sw:'Wakalenjin', read:'ワカレンジン', jp:'カレンジンの人々', usage:'ケニア / 民族', type:'word', pos:'noun', nounClass:'M-WA', quality:'B', note:'単数 Mkalenjin / 長距離ランナーを多く輩出' },
+  { id:'tribe_kamba', cat:'daily', sw:'Wakamba', read:'ワカンバ', jp:'カンバの人々', usage:'ケニア / 民族', type:'word', pos:'noun', nounClass:'M-WA', quality:'B', note:'単数 Mkamba / ケニア東部・木彫りで有名' },
+  { id:'tribe_maasai', cat:'daily', sw:'Wamasai', read:'ワマサイ', jp:'マサイの人々', usage:'ケニア / 民族', type:'word', pos:'noun', nounClass:'M-WA', quality:'B', note:'単数 Mmasai / ケニア・タンザニアにまたがる牧畜民', example:'例: Wamasai ni wafugaji.\nマサイの人々は牧畜民です' },
+  { id:'tribe_sukuma', cat:'daily', sw:'Wasukuma', read:'ワスクマ', jp:'スクマの人々', usage:'タンザニア / 民族', type:'word', pos:'noun', nounClass:'M-WA', quality:'B', note:'単数 Msukuma / タンザニア最大の民族・ビクトリア湖南岸' },
+  { id:'tribe_chaga', cat:'daily', sw:'Wachaga', read:'ワチャガ', jp:'チャガの人々', usage:'タンザニア / 民族', type:'word', pos:'noun', nounClass:'M-WA', quality:'B', note:'単数 Mchaga / キリマンジャロ山麓・コーヒー栽培と商売で有名' },
+  { id:'tribe_haya', cat:'daily', sw:'Wahaya', read:'ワハヤ', jp:'ハヤの人々', usage:'タンザニア / 民族', type:'word', pos:'noun', nounClass:'M-WA', quality:'B', note:'単数 Mhaya / タンザニア北西部' },
+  { id:'tribe_ganda', cat:'daily', sw:'Waganda', read:'ワガンダ', jp:'ガンダの人々', usage:'ウガンダ / 民族', type:'word', pos:'noun', nounClass:'M-WA', quality:'B', note:'単数 Mganda / ウガンダ最大の民族・国名の由来。現地ルガンダ語では Baganda' },
+  { id:'tribe_soga', cat:'daily', sw:'Wasoga', read:'ワソガ', jp:'ソガの人々', usage:'ウガンダ / 民族', type:'word', pos:'noun', nounClass:'M-WA', quality:'B', note:'単数 Msoga / ウガンダ東部。現地語では Basoga' },
+  { id:'kitchen_utensil', cat:'daily', sw:'chombo', read:'チョンボ', jp:'器：道具', usage:'家庭 / 食器', type:'word', pos:'noun', nounClass:'KI-VI', note:'複数 vyombo（食器類・洗い物）' },
+  { id:'kitchen_plate', cat:'daily', sw:'sahani', read:'サハニ', jp:'皿', usage:'家庭 / 食器', type:'word', pos:'noun', nounClass:'N-N', example:'例: Lete sahani mbili.\nお皿を2枚持ってきて' },
+  { id:'kitchen_cup', cat:'daily', sw:'kikombe', read:'キコンベ', jp:'カップ：湯のみ', usage:'家庭 / 食器', type:'word', pos:'noun', nounClass:'KI-VI', note:'複数 vikombe', example:'例: kikombe cha chai\nお茶のカップ' },
+  { id:'kitchen_glass', cat:'daily', sw:'glasi', read:'グラシ', jp:'コップ：グラス', usage:'家庭 / 食器', type:'word', pos:'noun', nounClass:'N-N' },
+  { id:'kitchen_spoon', cat:'daily', sw:'kijiko', read:'キジコ', jp:'スプーン', usage:'家庭 / 食器', type:'word', pos:'noun', nounClass:'KI-VI', note:'複数 vijiko / 大さじの意味でも使う' },
+  { id:'kitchen_fork', cat:'daily', sw:'uma', read:'ウマ', jp:'フォーク', usage:'家庭 / 食器', type:'word', pos:'noun' },
+  { id:'kitchen_knife', cat:'daily', sw:'kisu', read:'キス', jp:'ナイフ：包丁', usage:'家庭 / 食器', type:'word', pos:'noun', nounClass:'KI-VI', note:'複数 visu' },
+  { id:'kitchen_pot', cat:'daily', sw:'sufuria', read:'スフリア', jp:'鍋', usage:'家庭 / 食器', type:'word', pos:'noun', nounClass:'N-N', example:'例: Sufuria iko jikoni.\n鍋は台所にあります' },
+  { id:'kitchen_kettle', cat:'daily', sw:'birika', read:'ビリカ', jp:'やかん：ポット', usage:'家庭 / 食器', type:'word', pos:'noun', nounClass:'JI-MA', note:'複数 mabirika' },
+  { id:'kitchen_bottle', cat:'daily', sw:'chupa', read:'チュパ', jp:'瓶：ボトル', usage:'家庭 / 食器', type:'word', pos:'noun', nounClass:'N-N', example:'例: chupa ya maji\n水のボトル' },
+  { id:'furniture_word', cat:'daily', sw:'samani', read:'サマニ', jp:'家具', usage:'家庭 / 家具', type:'word', pos:'noun', nounClass:'N-N' },
+  { id:'furniture_table', cat:'daily', sw:'meza', read:'メザ', jp:'テーブル：机', usage:'家庭 / 家具', type:'word', pos:'noun', nounClass:'N-N', example:'例: Weka kitabu mezani.\n本をテーブルに置いて' },
+  { id:'furniture_bed', cat:'daily', sw:'kitanda', read:'キタンダ', jp:'ベッド', usage:'家庭 / 家具', type:'word', pos:'noun', nounClass:'KI-VI', note:'複数 vitanda' },
+  { id:'furniture_cupboard', cat:'daily', sw:'kabati', read:'カバティ', jp:'棚：戸棚', usage:'家庭 / 家具', type:'word', pos:'noun', nounClass:'JI-MA', note:'複数 makabati' },
+  { id:'furniture_sofa', cat:'daily', sw:'kochi', read:'コチ', jp:'ソファ', usage:'家庭 / 家具', type:'word', pos:'noun', nounClass:'JI-MA', note:'複数 makochi' },
+  { id:'furniture_door', cat:'daily', sw:'mlango', read:'ムランゴ', jp:'ドア：扉', usage:'家庭 / 家具', type:'word', pos:'noun', nounClass:'M-MI', note:'複数 milango', example:'例: Funga mlango, tafadhali.\nドアを閉めてください' },
+  { id:'furniture_window', cat:'daily', sw:'dirisha', read:'ディリシャ', jp:'窓', usage:'家庭 / 家具', type:'word', pos:'noun', nounClass:'JI-MA', note:'複数 madirisha', example:'例: Fungua dirisha.\n窓を開けて' },
+  { id:'furniture_lamp', cat:'daily', sw:'taa', read:'ター', jp:'明かり：ランプ、電灯', usage:'家庭 / 家具', type:'word', pos:'noun', nounClass:'N-N', example:'例: Washa taa.\n電気をつけて' },
+  { id:'furniture_mattress', cat:'daily', sw:'godoro', read:'ゴドロ', jp:'マットレス', usage:'家庭 / 家具', type:'word', pos:'noun', nounClass:'JI-MA', note:'複数 magodoro' },
+  { id:'furniture_pillow', cat:'daily', sw:'mto', read:'ムト', jp:'枕', usage:'家庭 / 家具', type:'word', pos:'noun', nounClass:'M-MI', note:'複数 mito / 「川」の意味もある' },
+  { id:'furniture_blanket', cat:'daily', sw:'blanketi', read:'ブランケティ', jp:'毛布', usage:'家庭 / 家具', type:'word', pos:'noun', nounClass:'JI-MA', note:'複数 mablanketi' },
+  { id:'furniture_sheet', cat:'daily', sw:'shuka', read:'シュカ', jp:'シーツ：布', usage:'家庭 / 家具', type:'word', pos:'noun', nounClass:'JI-MA', note:'複数 mashuka / マサイの赤い布も shuka' },
+  { id:'daily_word_food', cat:'daily', sw:'chakula', read:'チャクラ', jp:'食べ物：食事', usage:'日常会話 / 基本語', type:'word', pos:'noun', nounClass:'KI-VI', note:'複数 vyakula', example:'例: Chakula kiko tayari.\n食事の用意ができました' },
+  { id:'daily_word_market', cat:'daily', sw:'soko', read:'ソコ', jp:'市場', usage:'日常会話 / 基本語', type:'word', pos:'noun', nounClass:'JI-MA', note:'複数 masoko', example:'例: Ninaenda sokoni.\n市場へ行きます' },
+  { id:'daily_word_shop', cat:'daily', sw:'duka', read:'ドゥカ', jp:'店', usage:'日常会話 / 基本語', type:'word', pos:'noun', nounClass:'JI-MA', note:'複数 maduka', example:'例: Duka liko wapi?\nお店はどこですか' },
+  { id:'daily_word_car', cat:'daily', sw:'gari', read:'ガリ', jp:'車', usage:'日常会話 / 基本語', type:'word', pos:'noun', nounClass:'JI-MA', note:'複数 magari' },
+  { id:'daily_word_school', cat:'daily', sw:'shule', read:'シュレ', jp:'学校', usage:'日常会話 / 基本語', type:'word', pos:'noun', nounClass:'N-N', example:'例: Watoto wako shuleni.\n子どもたちは学校にいます' },
+  { id:'daily_word_road', cat:'daily', sw:'barabara', read:'バラバラ', jp:'道路：大通り', usage:'日常会話 / 基本語', type:'word', pos:'noun', nounClass:'N-N' },
 ];
 
 const HUMOR_EXAMPLES = {
@@ -1085,6 +1187,11 @@ const TEST_CHOICE_COUNT_STORAGE_KEY = 'sakusaku_swahili_test_choices_v1';
 const FRONT_GRAMMAR_HINTS_STORAGE_KEY = 'sakusaku_swahili_front_grammar_hints_v1';
 const LEGACY_FRONT_POS_VISIBILITY_STORAGE_KEY = 'sakusaku_swahili_front_pos_visible_v1';
 const TEST_CHOICE_COUNT_OPTIONS = [2, 3, 4];
+const STUDY_SCOPE_STORAGE_KEY = 'sakusaku_swahili_study_scope_v1';
+const STUDY_SCOPES = {
+  all: '全カード',
+  unmastered: '未習得のみ'
+};
 const DISPLAY_ORDERS = {
   random: 'ランダム',
   asc: 'A→Z',
@@ -1456,6 +1563,7 @@ const PROPER_NOUN_CARD_IDS = new Set([
 let currentCategory = localStorage.getItem(CATEGORY_STORAGE_KEY) || 'all';
 if (!CATEGORIES[currentCategory]) currentCategory = 'all';
 let currentDisplayOrder = localStorage.getItem(DISPLAY_ORDER_STORAGE_KEY) || 'random';
+let currentStudyScope = STUDY_SCOPES[localStorage.getItem(STUDY_SCOPE_STORAGE_KEY)] ? localStorage.getItem(STUDY_SCOPE_STORAGE_KEY) : 'all';
 if (!DISPLAY_ORDERS[currentDisplayOrder]) currentDisplayOrder = 'random';
 let currentTestChoiceCount = Number(localStorage.getItem(TEST_CHOICE_COUNT_STORAGE_KEY)) || 4;
 if (!TEST_CHOICE_COUNT_OPTIONS.includes(currentTestChoiceCount)) currentTestChoiceCount = 4;
@@ -1552,7 +1660,10 @@ function getPhrasesByCategory(category = currentCategory) {
   return PHRASES;
 }
 function getActivePhrases() {
-  return getPhrasesByCategory();
+  const phrases = getPhrasesByCategory();
+  if (currentStudyScope !== 'unmastered') return phrases;
+  const data = loadData();
+  return phrases.filter(item => !data[getCardKey(item)]?.mastered);
 }
 function getScopeLabel() {
   return CATEGORIES[currentCategory] || CATEGORIES.all;
@@ -1637,12 +1748,13 @@ function updateFrontGrammarVisibility() {
 function updateStats() {
   const data = loadData();
   const active = getActivePhrases();
-  const mastered = active.filter(item => data[getCardKey(item)]?.mastered).length;
+  const mastered = getPhrasesByCategory().filter(item => data[getCardKey(item)]?.mastered).length;
+  const scopeSuffix = currentStudyScope === 'unmastered' ? '・未習得のみ' : '';
   document.getElementById('stat-today').textContent = reviewedToday;
   document.getElementById('stat-mastered').textContent = mastered;
   document.getElementById('scope-text').textContent = currentMode === 'test'
     ? `テスト: ${testCorrect}問正解`
-    : `${getScopeLabel()} / ${active.length}${getScopeUnit()}`;
+    : `${getScopeLabel()}${scopeSuffix} / ${active.length}${getScopeUnit()}`;
 }
 function setCategory(category) {
   currentCategory = CATEGORIES[category] ? category : 'all';
@@ -1650,6 +1762,71 @@ function setCategory(category) {
   reviewedToday = 0;
   updateCategoryButtons();
   restartCurrentMode();
+}
+function setStudyScope(scope) {
+  currentStudyScope = STUDY_SCOPES[scope] ? scope : 'all';
+  localStorage.setItem(STUDY_SCOPE_STORAGE_KEY, currentStudyScope);
+  reviewedToday = 0;
+  updateStudyScopeButtons();
+  restartCurrentMode();
+}
+function updateStudyScopeButtons() {
+  document.querySelectorAll('.study-scope-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.studyScope === currentStudyScope);
+  });
+}
+function exportProgressData() {
+  const payload = {
+    app: 'sakusaku_swahili',
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    progress: loadData(),
+    settings: {
+      category: localStorage.getItem(CATEGORY_STORAGE_KEY) || 'all',
+      displayOrder: localStorage.getItem(DISPLAY_ORDER_STORAGE_KEY) || 'random',
+      testChoices: localStorage.getItem(TEST_CHOICE_COUNT_STORAGE_KEY) || '4',
+      frontGrammarHints: localStorage.getItem(FRONT_GRAMMAR_HINTS_STORAGE_KEY) || 'show',
+      studyScope: localStorage.getItem(STUDY_SCOPE_STORAGE_KEY) || 'all'
+    }
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `sakusaku_swahili_backup_${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+function importProgressData(event) {
+  const file = event.target.files && event.target.files[0];
+  event.target.value = '';
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const payload = JSON.parse(reader.result);
+      if (payload.app !== 'sakusaku_swahili' || typeof payload.progress !== 'object' || payload.progress === null) {
+        alert('このファイルはサクサクスワヒリ語のバックアップではないようです。');
+        return;
+      }
+      const count = Object.keys(payload.progress).length;
+      if (!confirm(`${count}枚分の学習記録を読み込みます。今この端末にある記録は上書きされます。よろしいですか？`)) return;
+      saveData(payload.progress);
+      const settings = payload.settings || {};
+      if (STUDY_SCOPES[settings.studyScope]) localStorage.setItem(STUDY_SCOPE_STORAGE_KEY, settings.studyScope);
+      if (CATEGORIES[settings.category]) localStorage.setItem(CATEGORY_STORAGE_KEY, settings.category);
+      if (DISPLAY_ORDERS[settings.displayOrder]) localStorage.setItem(DISPLAY_ORDER_STORAGE_KEY, settings.displayOrder);
+      if (TEST_CHOICE_COUNT_OPTIONS.includes(Number(settings.testChoices))) localStorage.setItem(TEST_CHOICE_COUNT_STORAGE_KEY, String(settings.testChoices));
+      if (settings.frontGrammarHints === 'show' || settings.frontGrammarHints === 'hide') localStorage.setItem(FRONT_GRAMMAR_HINTS_STORAGE_KEY, settings.frontGrammarHints);
+      alert('読み込みました。画面を更新します。');
+      location.reload();
+    } catch (err) {
+      alert('ファイルを読み込めませんでした。バックアップのJSONファイルか確認してください。');
+    }
+  };
+  reader.readAsText(file);
 }
 function setDisplayOrder(order) {
   currentDisplayOrder = DISPLAY_ORDERS[order] ? order : 'random';
@@ -1674,6 +1851,7 @@ function showSettingsView() {
   buildCategoryButtons();
   updateCategoryButtons();
   updateDisplayOrderButtons();
+  updateStudyScopeButtons();
   updateTestChoiceButtons();
   updateFrontGrammarButtons();
   updateFrontGrammarVisibility();
@@ -1708,7 +1886,7 @@ function startSession() {
   document.getElementById('test-panel').style.display = 'none';
   document.getElementById('swipe-msg').style.display = 'block';
   if (!sessionCards.length) {
-    showEmptySet('この条件の学習カードはありません');
+    showEmptySet(currentStudyScope === 'unmastered' ? 'このカテゴリは全部習得済みです。設定の「出題範囲」を全カードに戻すと復習できます' : 'この条件の学習カードはありません');
     updateStats();
     return;
   }
@@ -1803,7 +1981,7 @@ function startTestSession() {
   document.getElementById('swipe-msg').style.display = 'none';
   document.getElementById('test-panel').style.display = 'block';
   if (!testCards.length) {
-    showEmptySet('この条件のテストカードはありません');
+    showEmptySet(currentStudyScope === 'unmastered' ? 'このカテゴリは全部習得済みです。設定の「出題範囲」を全カードに戻すとテストできます' : 'この条件のテストカードはありません');
     updateStats();
     return;
   }
