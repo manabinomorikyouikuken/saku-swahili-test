@@ -512,6 +512,17 @@
     .rating-btn.rating-okay { border-color: #93c5fd; color: #1d4ed8; }
     .rating-btn.rating-great { border-color: #86efac; color: #15803d; }
     .rating-btn:active { transform: scale(0.97); }
+    .badge-toast { position: fixed; top: 14px; left: 50%; transform: translate(-50%, -80px); background: #1e293b; color: #fff; padding: 10px 18px; border-radius: 999px; font-size: 14px; font-weight: 700; box-shadow: 0 6px 18px rgba(15, 23, 42, 0.35); transition: transform 0.35s ease; z-index: 99; pointer-events: none; }
+    .badge-toast.show { transform: translate(-50%, 0); }
+    .record-stats { display: flex; gap: 8px; margin-bottom: 10px; }
+    .record-stat { flex: 1; background: #f1f5f9; border-radius: 12px; padding: 10px 4px; text-align: center; }
+    .record-num { font-size: 20px; font-weight: 800; color: #1e293b; }
+    .record-label { font-size: 10px; color: #64748b; margin-top: 2px; }
+    .badges-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 8px; }
+    .badge-item { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 2px; border-radius: 10px; background: #f1f5f9; opacity: 0.35; filter: grayscale(1); }
+    .badge-item.earned { opacity: 1; filter: none; background: #fefce8; border: 1px solid #fde047; }
+    .badge-icon { font-size: 20px; }
+    .badge-label { font-size: 9px; color: #475569; text-align: center; }
   </style>
 </head>
 <body>
@@ -526,7 +537,11 @@
   <div class="stats">
     <div class="stat-item">
       <span class="stat-num" id="stat-today">0</span>
-      <div class="stat-label">今回</div>
+      <div class="stat-label">今日</div>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num" id="stat-streak">0</span>
+      <div class="stat-label">連続🔥</div>
     </div>
     <div class="stat-item">
       <span class="stat-num" id="stat-mastered">0</span>
@@ -534,6 +549,8 @@
     </div>
   </div>
 </header>
+
+<div class="badge-toast" id="badge-toast" aria-live="polite"></div>
 
 <main id="learn-view" class="main">
   <div class="progress-wrap">
@@ -664,6 +681,17 @@
       <button class="option-btn study-scope-btn" type="button" data-study-scope="unmastered" onclick="setStudyScope('unmastered')">未習得のみ<span>習得済みはお休み</span></button>
     </div>
     <div class="note">「今日の復習」は、忘れる頃合いを計算して期限が来たカードだけを出します（おすすめ）。覚え具合は3つのボタン（難しかった・まあまあ・バッチリ）で記録され、次に出るタイミングが自動で変わります。</div>
+  </div>
+
+  <div class="panel">
+    <div class="section-title">がんばりの記録</div>
+    <div class="record-stats">
+      <div class="record-stat"><span class="record-num" id="record-today">0</span><div class="record-label">今日の学習</div></div>
+      <div class="record-stat"><span class="record-num" id="record-streak">0</span><div class="record-label">連続日数🔥</div></div>
+      <div class="record-stat"><span class="record-num" id="record-mastered">0</span><div class="record-label">習得語数</div></div>
+    </div>
+    <div class="badges-grid" id="badges-grid"></div>
+    <div class="note">毎日1枚でも学習すると連続日数がのびます。節目でバッジがもらえます。</div>
   </div>
 
   <div class="panel">
@@ -1710,6 +1738,103 @@ function shuffle(items) {
   }
   return arr;
 }
+const META_STORAGE_KEY = 'sakusaku_swahili_meta_v1';
+const STREAK_BADGES = [
+  { days: 3, icon: '🌱', label: '3日連続' },
+  { days: 7, icon: '🌿', label: '1週間連続' },
+  { days: 14, icon: '🌳', label: '2週間連続' },
+  { days: 30, icon: '⭐', label: '1ヶ月連続' },
+  { days: 100, icon: '🏆', label: '100日連続' }
+];
+const MASTERY_BADGES = [
+  { count: 10, icon: '🐣', label: '10語習得' },
+  { count: 50, icon: '🦜', label: '50語習得' },
+  { count: 100, icon: '🦓', label: '100語習得' },
+  { count: 200, icon: '🦁', label: '200語習得' },
+  { count: 401, icon: '🐘', label: '全語習得' }
+];
+function loadMeta() {
+  try { return JSON.parse(localStorage.getItem(META_STORAGE_KEY)) || {}; }
+  catch (err) { return {}; }
+}
+function saveMeta(meta) { localStorage.setItem(META_STORAGE_KEY, JSON.stringify(meta)); }
+function getDateKey(date = new Date()) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+function recordDailyReview() {
+  const meta = loadMeta();
+  meta.dailyReviews = meta.dailyReviews || {};
+  const today = getDateKey();
+  meta.dailyReviews[today] = (Number(meta.dailyReviews[today]) || 0) + 1;
+  const keys = Object.keys(meta.dailyReviews).sort();
+  while (keys.length > 400) delete meta.dailyReviews[keys.shift()];
+  saveMeta(meta);
+}
+function getTodayReviewCount() {
+  return Number(loadMeta().dailyReviews?.[getDateKey()]) || 0;
+}
+function getStreakDays() {
+  const daily = loadMeta().dailyReviews || {};
+  let streak = 0;
+  const d = new Date();
+  if (!Number(daily[getDateKey(d)])) d.setDate(d.getDate() - 1);
+  while (Number(daily[getDateKey(d)]) > 0) {
+    streak++;
+    d.setDate(d.getDate() - 1);
+  }
+  return streak;
+}
+function getMasteredCountAll() {
+  const data = loadData();
+  return PHRASES.filter(item => data[getCardKey(item)]?.mastered).length;
+}
+function checkAndAwardBadges() {
+  const meta = loadMeta();
+  meta.badges = meta.badges || {};
+  const streak = getStreakDays();
+  const mastered = getMasteredCountAll();
+  const newly = [];
+  STREAK_BADGES.forEach(b => {
+    const key = `streak_${b.days}`;
+    if (streak >= b.days && !meta.badges[key]) { meta.badges[key] = Date.now(); newly.push(b); }
+  });
+  MASTERY_BADGES.forEach(b => {
+    const key = `mastery_${b.count}`;
+    if (mastered >= b.count && !meta.badges[key]) { meta.badges[key] = Date.now(); newly.push(b); }
+  });
+  if (newly.length) {
+    saveMeta(meta);
+    showBadgeToast(newly[newly.length - 1]);
+  }
+}
+function showBadgeToast(badge) {
+  const el = document.getElementById('badge-toast');
+  if (!el) return;
+  el.textContent = `${badge.icon} バッジ獲得！ ${badge.label}`;
+  el.classList.add('show');
+  clearTimeout(showBadgeToast._timer);
+  showBadgeToast._timer = setTimeout(() => el.classList.remove('show'), 2600);
+}
+function buildBadgesPanel() {
+  const badges = loadMeta().badges || {};
+  document.getElementById('record-today').textContent = getTodayReviewCount();
+  document.getElementById('record-streak').textContent = getStreakDays();
+  document.getElementById('record-mastered').textContent = getMasteredCountAll();
+  const grid = document.getElementById('badges-grid');
+  grid.innerHTML = '';
+  const render = (list, prefix, keyField) => list.forEach(b => {
+    const earned = Boolean(badges[`${prefix}${b[keyField]}`]);
+    const div = document.createElement('div');
+    div.className = 'badge-item' + (earned ? ' earned' : '');
+    div.innerHTML = `<span class="badge-icon">${b.icon}</span><span class="badge-label">${b.label}</span>`;
+    grid.appendChild(div);
+  });
+  render(STREAK_BADGES, 'streak_', 'days');
+  render(MASTERY_BADGES, 'mastery_', 'count');
+}
 function normalizeReviewQuality(q) {
   if (q === true) return 4;
   if (q === false) return 1;
@@ -1825,7 +1950,8 @@ function updateStats() {
   const active = getActivePhrases();
   const mastered = getPhrasesByCategory().filter(item => data[getCardKey(item)]?.mastered).length;
   const scopeSuffix = currentStudyScope === 'unmastered' ? '・未習得のみ' : currentStudyScope === 'due' ? '・今日の復習' : '';
-  document.getElementById('stat-today').textContent = reviewedToday;
+  document.getElementById('stat-today').textContent = getTodayReviewCount();
+  document.getElementById('stat-streak').textContent = getStreakDays();
   document.getElementById('stat-mastered').textContent = mastered;
   document.getElementById('scope-text').textContent = currentMode === 'test'
     ? `テスト: ${testCorrect}問正解`
@@ -1856,6 +1982,7 @@ function exportProgressData() {
     version: 1,
     exportedAt: new Date().toISOString(),
     progress: loadData(),
+    meta: loadMeta(),
     settings: {
       category: localStorage.getItem(CATEGORY_STORAGE_KEY) || 'all',
       displayOrder: localStorage.getItem(DISPLAY_ORDER_STORAGE_KEY) || 'random',
@@ -1889,6 +2016,7 @@ function importProgressData(event) {
       const count = Object.keys(payload.progress).length;
       if (!confirm(`${count}枚分の学習記録を読み込みます。今この端末にある記録は上書きされます。よろしいですか？`)) return;
       saveData(payload.progress);
+      if (payload.meta && typeof payload.meta === 'object') saveMeta(payload.meta);
       const settings = payload.settings || {};
       if (STUDY_SCOPES[settings.studyScope]) localStorage.setItem(STUDY_SCOPE_STORAGE_KEY, settings.studyScope);
       if (CATEGORIES[settings.category]) localStorage.setItem(CATEGORY_STORAGE_KEY, settings.category);
@@ -1924,6 +2052,7 @@ function setFrontGrammarVisibility(visible) {
 }
 function showSettingsView() {
   buildCategoryButtons();
+  buildBadgesPanel();
   updateCategoryButtons();
   updateDisplayOrderButtons();
   updateStudyScopeButtons();
@@ -2033,6 +2162,8 @@ function rate(quality) {
   if (!sessionReviewedKeys.has(key)) {
     updateCard(item, quality);
     reviewedToday++;
+    recordDailyReview();
+    checkAndAwardBadges();
     sessionReviewedKeys.add(key);
   }
   currentIndex++;
@@ -2126,6 +2257,8 @@ function answerTestChoice(button, item) {
   if (!sessionReviewedKeys.has(key)) {
     updateCard(item, correct ? 4 : 1);
     reviewedToday++;
+    recordDailyReview();
+    checkAndAwardBadges();
     sessionReviewedKeys.add(key);
   }
   document.getElementById('test-feedback').textContent = correct ? '正解！' : `正解は「${item.jp}」`;
