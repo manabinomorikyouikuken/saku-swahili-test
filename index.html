@@ -329,6 +329,9 @@
     }
     .test-choice-card {
       min-height: 54px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
       border: 1px solid #d8e1ee;
       background: white;
       color: #334155;
@@ -342,6 +345,54 @@
       touch-action: manipulation;
       box-shadow: 0 3px 12px rgba(15,23,42,0.05);
     }
+    .test-choice-label {
+      flex-shrink: 0;
+      display: inline-grid;
+      place-items: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      background: #eef2f9;
+      color: #1d4ed8;
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .test-choice-card.correct .test-choice-label { background: #16a34a; color: #fff; }
+    .test-choice-card.wrong .test-choice-label { background: #ef4444; color: #fff; }
+    .test-letter-row {
+      --letter-gap: 9px;
+      --letter-size: min(46vw, 184px);
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--letter-gap);
+      width: var(--letter-size);
+      max-width: 100%;
+      margin: 14px auto 0;
+    }
+    .test-letter-row.count-2 { min-height: var(--letter-size); align-content: center; }
+    .test-letter-row.count-3 .test-letter-btn:nth-child(1) {
+      grid-column: 1 / -1;
+      justify-self: center;
+      width: calc((var(--letter-size) - var(--letter-gap)) / 2);
+    }
+    .test-letter-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      aspect-ratio: 1 / 1;
+      border: 1px solid #d8e1ee;
+      background: #fff;
+      color: #1a2a4a;
+      border-radius: 16px;
+      font-size: clamp(21px, 6vw, 28px);
+      font-weight: 900;
+      cursor: pointer;
+      touch-action: manipulation;
+      box-shadow: 0 3px 10px rgba(15,23,42,0.05);
+    }
+    .test-letter-btn:disabled { cursor: default; opacity: 0.9; }
+    .test-letter-btn.correct { border-color: #16a34a; background: #ecfdf5; color: #166534; }
+    .test-letter-btn.wrong { border-color: #ef4444; background: #fef2f2; color: #991b1b; }
     .test-choice-card:disabled { cursor: default; opacity: 0.82; }
     .test-choice-card.correct { border-color: #16a34a; background: #ecfdf5; color: #166534; }
     .test-choice-card.wrong { border-color: #ef4444; background: #fef2f2; color: #991b1b; }
@@ -604,6 +655,7 @@
     <div class="test-panel" id="test-panel" aria-live="polite">
       <div class="test-word-card"><div class="test-word-text" id="test-word-text">-</div></div>
       <div class="test-choice-grid" id="test-choice-grid"></div>
+      <div class="test-letter-row" id="test-letter-row" aria-label="ABC解答ボタン"></div>
       <div class="test-feedback" id="test-feedback"></div>
       <button class="test-next-btn" id="test-next-btn" type="button" onclick="showNextTestQuestion()">次へ</button>
     </div>
@@ -634,7 +686,7 @@
 
   <div class="learn-bottom-bar">
     <button class="nav-btn active" id="learn-mode-btn" type="button" onclick="startSession()">学習</button>
-    <button class="nav-btn test" id="test-mode-btn" type="button" onclick="startTestSession()">サクサクテスト</button>
+    <button class="nav-btn test" id="test-mode-btn" type="button" onclick="startTestSession()">テスト</button>
     <button class="nav-btn" type="button" onclick="showSettingsView()">設定</button>
   </div>
 </main>
@@ -1659,8 +1711,8 @@ if (!CATEGORIES[currentCategory]) currentCategory = 'all';
 let currentDisplayOrder = localStorage.getItem(DISPLAY_ORDER_STORAGE_KEY) || 'random';
 let currentStudyScope = STUDY_SCOPES[localStorage.getItem(STUDY_SCOPE_STORAGE_KEY)] ? localStorage.getItem(STUDY_SCOPE_STORAGE_KEY) : 'all';
 if (!DISPLAY_ORDERS[currentDisplayOrder]) currentDisplayOrder = 'random';
-let currentTestChoiceCount = Number(localStorage.getItem(TEST_CHOICE_COUNT_STORAGE_KEY)) || 4;
-if (!TEST_CHOICE_COUNT_OPTIONS.includes(currentTestChoiceCount)) currentTestChoiceCount = 4;
+let currentTestChoiceCount = Number(localStorage.getItem(TEST_CHOICE_COUNT_STORAGE_KEY)) || 3;
+if (!TEST_CHOICE_COUNT_OPTIONS.includes(currentTestChoiceCount)) currentTestChoiceCount = 3;
 const savedFrontGrammarHints = localStorage.getItem(FRONT_GRAMMAR_HINTS_STORAGE_KEY) || localStorage.getItem(LEGACY_FRONT_POS_VISIBILITY_STORAGE_KEY);
 let showFrontGrammarHints = savedFrontGrammarHints !== 'hide';
 
@@ -1674,6 +1726,7 @@ let testCards = [];
 let testIndex = 0;
 let testCorrect = 0;
 let testAnswered = false;
+let currentTestChoices = [];
 
 function loadData() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
@@ -2119,7 +2172,7 @@ function exportProgressData() {
     settings: {
       category: localStorage.getItem(CATEGORY_STORAGE_KEY) || 'all',
       displayOrder: localStorage.getItem(DISPLAY_ORDER_STORAGE_KEY) || 'random',
-      testChoices: localStorage.getItem(TEST_CHOICE_COUNT_STORAGE_KEY) || '4',
+      testChoices: localStorage.getItem(TEST_CHOICE_COUNT_STORAGE_KEY) || '3',
       frontGrammarHints: localStorage.getItem(FRONT_GRAMMAR_HINTS_STORAGE_KEY) || 'show',
       studyScope: localStorage.getItem(STUDY_SCOPE_STORAGE_KEY) || 'all',
       audio: localStorage.getItem(AUDIO_STORAGE_KEY) || 'on',
@@ -2176,7 +2229,7 @@ function setDisplayOrder(order) {
   if (currentMode === 'learn') startSession();
 }
 function setTestChoiceCount(count) {
-  currentTestChoiceCount = TEST_CHOICE_COUNT_OPTIONS.includes(Number(count)) ? Number(count) : 4;
+  currentTestChoiceCount = TEST_CHOICE_COUNT_OPTIONS.includes(Number(count)) ? Number(count) : 3;
   localStorage.setItem(TEST_CHOICE_COUNT_STORAGE_KEY, String(currentTestChoiceCount));
   updateTestChoiceButtons();
   if (currentMode === 'test') startTestSession();
@@ -2362,15 +2415,40 @@ function showTestQuestion() {
   document.getElementById('test-feedback').textContent = '';
   document.getElementById('test-next-btn').style.display = 'none';
   const grid = document.getElementById('test-choice-grid');
+  const letterRow = document.getElementById('test-letter-row');
   grid.innerHTML = '';
-  buildTestChoices(item).forEach(choice => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'test-choice-card';
-    btn.textContent = choice.item.jp;
-    btn.dataset.correct = choice.correct ? 'true' : 'false';
-    btn.onclick = () => answerTestChoice(btn, item);
-    grid.appendChild(btn);
+  letterRow.innerHTML = '';
+  const labels = ['A', 'B', 'C', 'D'];
+  const choices = buildTestChoices(item);
+  currentTestChoices = choices;
+  letterRow.className = `test-letter-row count-${choices.length}`;
+  choices.forEach((choice, index) => {
+    const letter = labels[index] || String(index + 1);
+    // 全幅テキストカード（A/B/C＋訳文）
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'test-choice-card';
+    card.dataset.index = index;
+    card.dataset.correct = choice.correct ? 'true' : 'false';
+    const label = document.createElement('span');
+    label.className = 'test-choice-label';
+    label.textContent = letter;
+    const text = document.createElement('span');
+    text.className = 'test-choice-meaning';
+    text.textContent = choice.item.jp;
+    card.appendChild(label);
+    card.appendChild(text);
+    card.onclick = () => answerTest(index, item);
+    grid.appendChild(card);
+    // 正方形の文字ボタン
+    const lbtn = document.createElement('button');
+    lbtn.type = 'button';
+    lbtn.className = 'test-letter-btn';
+    lbtn.dataset.index = index;
+    lbtn.dataset.correct = choice.correct ? 'true' : 'false';
+    lbtn.textContent = letter;
+    lbtn.onclick = () => answerTest(index, item);
+    letterRow.appendChild(lbtn);
   });
   document.getElementById('progress-fill').style.width = `${(testIndex / testCards.length) * 100}%`;
   document.getElementById('progress-text').textContent = `${testIndex} / ${testCards.length}`;
@@ -2385,17 +2463,20 @@ function triggerWrongAnswerCue() {
     card.classList.add('wrong-cue');
   }
 }
-function answerTestChoice(button, item) {
+function answerTest(index, item) {
   if (testAnswered) return;
   testAnswered = true;
-  const correct = button.dataset.correct === 'true';
+  const choice = currentTestChoices[index];
+  const correct = Boolean(choice && choice.correct);
   if (correct) testCorrect++;
   if (!correct) triggerWrongAnswerCue();
-  document.querySelectorAll('.test-choice-card').forEach(btn => {
+  // テキストカードと文字ボタンの両方を結果表示
+  document.querySelectorAll('.test-choice-card, .test-letter-btn').forEach(btn => {
     btn.disabled = true;
+    const idx = Number(btn.dataset.index);
     if (btn.dataset.correct === 'true') btn.classList.add('correct');
+    else if (idx === index) btn.classList.add('wrong');
   });
-  if (!correct) button.classList.add('wrong');
   const key = getCardKey(item);
   if (!sessionReviewedKeys.has(key)) {
     updateCard(item, correct ? 4 : 1);
