@@ -512,6 +512,12 @@
     .rating-btn.rating-okay { border-color: #93c5fd; color: #1d4ed8; }
     .rating-btn.rating-great { border-color: #86efac; color: #15803d; }
     .rating-btn:active { transform: scale(0.97); }
+    .audio-btn-row { display: flex; justify-content: center; margin-top: 12px; }
+    .audio-btn { width: 48px; height: 48px; border-radius: 50%; border: 1px solid #cbd5e1; background: #fff; font-size: 22px; line-height: 1; cursor: pointer; box-shadow: 0 2px 6px rgba(15,23,42,0.12); display: flex; align-items: center; justify-content: center; padding: 0; }
+    .audio-btn:active { transform: scale(0.92); }
+    .audio-btn.audio-off { opacity: 0.45; }
+    .audio-toggle-btn span, .autospeak-btn span { font-size: 10px; font-weight: 500; color: #64748b; }
+    #voice-status { font-size: 11px; color: #475569; margin-top: 6px; line-height: 1.4; }
     .badge-toast { position: fixed; top: 14px; left: 50%; transform: translate(-50%, -80px); background: #1e293b; color: #fff; padding: 10px 18px; border-radius: 999px; font-size: 14px; font-weight: 700; box-shadow: 0 6px 18px rgba(15, 23, 42, 0.35); transition: transform 0.35s ease; z-index: 99; pointer-events: none; }
     .badge-toast.show { transform: translate(-50%, 0); }
     .record-stats { display: flex; gap: 8px; margin-bottom: 10px; }
@@ -583,6 +589,10 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <div class="audio-btn-row" id="audio-btn-row">
+      <button class="audio-btn" id="audio-btn" type="button" aria-label="発音を聞く" onclick="speakCurrentCard()">🔊</button>
     </div>
 
     <div class="rating-row" id="rating-row">
@@ -681,6 +691,20 @@
       <button class="option-btn study-scope-btn" type="button" data-study-scope="unmastered" onclick="setStudyScope('unmastered')">未習得のみ<span>習得済みはお休み</span></button>
     </div>
     <div class="note">「今日の復習」は、忘れる頃合いを計算して期限が来たカードだけを出します（おすすめ）。覚え具合は3つのボタン（難しかった・まあまあ・バッチリ）で記録され、次に出るタイミングが自動で変わります。</div>
+  </div>
+
+  <div class="panel">
+    <div class="section-title">発音の音声</div>
+    <div class="option-grid">
+      <button class="option-btn audio-toggle-btn active" type="button" data-audio="on" onclick="setAudioEnabled(true)">オン<span>🔊ボタンで再生</span></button>
+      <button class="option-btn audio-toggle-btn" type="button" data-audio="off" onclick="setAudioEnabled(false)">オフ<span>音を出さない</span></button>
+    </div>
+    <div class="option-grid" style="margin-top:8px;">
+      <button class="option-btn autospeak-btn" type="button" data-autospeak="on" onclick="setAutoSpeak(true)">自動読み上げオン<span>カード表示時に発音</span></button>
+      <button class="option-btn autospeak-btn active" type="button" data-autospeak="off" onclick="setAutoSpeak(false)">自動読み上げオフ<span>ボタンだけで再生</span></button>
+    </div>
+    <div id="voice-status"></div>
+    <div class="note">スワヒリ語はローマ字に近い発音です。端末にスワヒリ語の音声がない場合は、発音が近い言語（イタリア語など）で代わりに読み上げます。それも無い端末では、カタカナ読みをご利用ください。</div>
   </div>
 
   <div class="panel">
@@ -1760,6 +1784,92 @@ function shuffle(items) {
   }
   return arr;
 }
+const AUDIO_STORAGE_KEY = 'sakusaku_swahili_audio_v1';
+const AUTO_SPEAK_STORAGE_KEY = 'sakusaku_swahili_autospeak_v1';
+let audioEnabled = localStorage.getItem(AUDIO_STORAGE_KEY) !== 'off';
+let autoSpeak = localStorage.getItem(AUTO_SPEAK_STORAGE_KEY) === 'on';
+let cachedVoice = null;
+let voiceResolved = false;
+const speechSupported = typeof window !== 'undefined' && 'speechSynthesis' in window && typeof SpeechSynthesisUtterance === 'function';
+
+function pickSwahiliVoice() {
+  if (!speechSupported) return null;
+  const voices = window.speechSynthesis.getVoices();
+  if (!voices || !voices.length) return null;
+  // 1. スワヒリ語ボイス（sw / sw-KE / sw-TZ）を最優先
+  let v = voices.find(x => /^sw(-|_|$)/i.test(x.lang));
+  if (v) return v;
+  // 2. 母音発音がスワヒリ語に近い言語で代替（イタリア語→スペイン語→インドネシア語）
+  for (const pref of ['it', 'es', 'id', 'sw']) {
+    v = voices.find(x => x.lang && x.lang.toLowerCase().startsWith(pref));
+    if (v) return v;
+  }
+  return null;
+}
+function resolveVoice() {
+  cachedVoice = pickSwahiliVoice();
+  voiceResolved = true;
+  return cachedVoice;
+}
+function getVoiceStatusLabel() {
+  if (!speechSupported) return 'この端末は音声読み上げに対応していません';
+  const v = cachedVoice || (voiceResolved ? null : resolveVoice());
+  if (!v) return '読み上げ用の音声が見つかりません（カタカナ読みをご利用ください）';
+  if (/^sw/i.test(v.lang)) return `スワヒリ語の音声を使用中（${v.name}）`;
+  return `代替音声を使用中（${v.name} / ${v.lang}）。スワヒリ語の発音に近い言語です`;
+}
+function speakSwahili(text) {
+  if (!audioEnabled || !speechSupported || !text) return false;
+  const voice = cachedVoice || resolveVoice();
+  try {
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    if (voice) { u.voice = voice; u.lang = voice.lang; }
+    else { u.lang = 'sw-KE'; }
+    u.rate = 0.9;
+    window.speechSynthesis.speak(u);
+    return true;
+  } catch (err) { return false; }
+}
+function speakCurrentCard() {
+  if (currentIndex >= sessionCards.length) return;
+  const item = sessionCards[currentIndex];
+  if (!speakSwahili(item.sw) && !audioEnabled) {
+    showBadgeToast({ icon: '🔇', label: '音声はオフです（設定でオン）' });
+  } else if (!speechSupported || !(cachedVoice || resolveVoice())) {
+    showBadgeToast({ icon: '🔈', label: 'この端末に音声がありません' });
+  }
+}
+function updateAudioButtonState() {
+  const btn = document.getElementById('audio-btn');
+  if (!btn) return;
+  const usable = audioEnabled && speechSupported;
+  btn.classList.toggle('audio-off', !usable);
+  btn.textContent = usable ? '🔊' : '🔇';
+  btn.setAttribute('aria-label', usable ? '発音を聞く' : '音声オフ');
+}
+function setAudioEnabled(on) {
+  audioEnabled = Boolean(on);
+  localStorage.setItem(AUDIO_STORAGE_KEY, audioEnabled ? 'on' : 'off');
+  if (!audioEnabled && speechSupported) window.speechSynthesis.cancel();
+  updateAudioButtonState();
+  updateAudioButtons();
+}
+function setAutoSpeak(on) {
+  autoSpeak = Boolean(on);
+  localStorage.setItem(AUTO_SPEAK_STORAGE_KEY, autoSpeak ? 'on' : 'off');
+  updateAudioButtons();
+}
+function updateAudioButtons() {
+  document.querySelectorAll('.audio-toggle-btn').forEach(btn => {
+    btn.classList.toggle('active', (btn.dataset.audio === 'on') === audioEnabled);
+  });
+  document.querySelectorAll('.autospeak-btn').forEach(btn => {
+    btn.classList.toggle('active', (btn.dataset.autospeak === 'on') === autoSpeak);
+  });
+  const status = document.getElementById('voice-status');
+  if (status) status.textContent = getVoiceStatusLabel();
+}
 const META_STORAGE_KEY = 'sakusaku_swahili_meta_v1';
 const STREAK_BADGES = [
   { days: 3, icon: '🌱', label: '3日連続' },
@@ -2011,7 +2121,9 @@ function exportProgressData() {
       displayOrder: localStorage.getItem(DISPLAY_ORDER_STORAGE_KEY) || 'random',
       testChoices: localStorage.getItem(TEST_CHOICE_COUNT_STORAGE_KEY) || '4',
       frontGrammarHints: localStorage.getItem(FRONT_GRAMMAR_HINTS_STORAGE_KEY) || 'show',
-      studyScope: localStorage.getItem(STUDY_SCOPE_STORAGE_KEY) || 'all'
+      studyScope: localStorage.getItem(STUDY_SCOPE_STORAGE_KEY) || 'all',
+      audio: localStorage.getItem(AUDIO_STORAGE_KEY) || 'on',
+      autoSpeak: localStorage.getItem(AUTO_SPEAK_STORAGE_KEY) || 'off'
     }
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
@@ -2046,6 +2158,8 @@ function importProgressData(event) {
       if (DISPLAY_ORDERS[settings.displayOrder]) localStorage.setItem(DISPLAY_ORDER_STORAGE_KEY, settings.displayOrder);
       if (TEST_CHOICE_COUNT_OPTIONS.includes(Number(settings.testChoices))) localStorage.setItem(TEST_CHOICE_COUNT_STORAGE_KEY, String(settings.testChoices));
       if (settings.frontGrammarHints === 'show' || settings.frontGrammarHints === 'hide') localStorage.setItem(FRONT_GRAMMAR_HINTS_STORAGE_KEY, settings.frontGrammarHints);
+      if (settings.audio === 'on' || settings.audio === 'off') localStorage.setItem(AUDIO_STORAGE_KEY, settings.audio);
+      if (settings.autoSpeak === 'on' || settings.autoSpeak === 'off') localStorage.setItem(AUTO_SPEAK_STORAGE_KEY, settings.autoSpeak);
       alert('読み込みました。画面を更新します。');
       location.reload();
     } catch (err) {
@@ -2076,6 +2190,7 @@ function setFrontGrammarVisibility(visible) {
 function showSettingsView() {
   buildCategoryButtons();
   buildBadgesPanel();
+  updateAudioButtons();
   updateCategoryButtons();
   updateDisplayOrderButtons();
   updateStudyScopeButtons();
@@ -2111,6 +2226,7 @@ function startSession() {
   document.getElementById('study-prompt').style.display = 'block';
   document.getElementById('card-container').style.display = 'block';
   document.getElementById('rating-row').style.display = 'flex';
+  document.getElementById('audio-btn-row').style.display = 'flex';
   document.getElementById('test-panel').style.display = 'none';
   document.getElementById('swipe-msg').style.display = 'block';
   if (!sessionCards.length) {
@@ -2130,6 +2246,8 @@ function showCard() {
   isFlipped = false;
   document.getElementById('card').classList.remove('flipped');
   document.getElementById('sw-text').textContent = getDisplaySwahili(item);
+  updateAudioButtonState();
+  if (autoSpeak) speakSwahili(item.sw);
   const pos = getPartOfSpeech(item);
   applyPosBadge(document.getElementById('pos-front'), pos);
   applyPosBadge(document.getElementById('pos-back'), pos);
@@ -2167,6 +2285,7 @@ function showEmptySet(message) {
   document.getElementById('study-prompt').style.display = 'block';
   document.getElementById('card-container').style.display = 'none';
   document.getElementById('rating-row').style.display = 'none';
+  document.getElementById('audio-btn-row').style.display = 'none';
   document.getElementById('test-panel').style.display = 'none';
   document.getElementById('swipe-msg').style.display = 'block';
   document.getElementById('swipe-msg').textContent = '設定で「全カード」または別のカテゴリを選んでください';
@@ -2213,6 +2332,7 @@ function startTestSession() {
   document.getElementById('study-prompt').style.display = 'none';
   document.getElementById('card-container').style.display = 'none';
   document.getElementById('rating-row').style.display = 'none';
+  document.getElementById('audio-btn-row').style.display = 'none';
   document.getElementById('swipe-msg').style.display = 'none';
   document.getElementById('test-panel').style.display = 'block';
   if (!testCards.length) {
@@ -2301,6 +2421,7 @@ function showTestComplete() {
   document.getElementById('study-prompt').style.display = 'none';
   document.getElementById('card-container').style.display = 'none';
   document.getElementById('rating-row').style.display = 'none';
+  document.getElementById('audio-btn-row').style.display = 'none';
   document.getElementById('test-panel').style.display = 'none';
   document.getElementById('swipe-msg').style.display = 'none';
   document.getElementById('session-complete').style.display = 'block';
@@ -2371,6 +2492,11 @@ document.addEventListener('keydown', event => {
   if (event.key === 'ArrowLeft') { event.preventDefault(); showPreviousCard(); }
 });
 migrateProgressData();
+if (speechSupported) {
+  resolveVoice();
+  window.speechSynthesis.onvoiceschanged = () => { resolveVoice(); updateAudioButtons(); updateAudioButtonState(); };
+}
+updateAudioButtonState();
 buildCategoryButtons();
 startSession();
 </script>
