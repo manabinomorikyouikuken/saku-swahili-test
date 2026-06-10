@@ -505,6 +505,13 @@
     }
     .header-title-row { display: flex; align-items: center; gap: 10px; }
     .header-flags { display: block; height: 15px; width: auto; }
+    .rating-row { display: flex; gap: 8px; margin-top: 12px; }
+    .rating-btn { flex: 1; padding: 10px 4px; border-radius: 12px; border: 1px solid #cbd5e1; background: #fff; font-size: 13px; font-weight: 700; color: #1e293b; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .rating-btn span { font-size: 10px; font-weight: 500; color: #64748b; }
+    .rating-btn.rating-hard { border-color: #fca5a5; color: #b91c1c; }
+    .rating-btn.rating-okay { border-color: #93c5fd; color: #1d4ed8; }
+    .rating-btn.rating-great { border-color: #86efac; color: #15803d; }
+    .rating-btn:active { transform: scale(0.97); }
   </style>
 </head>
 <body>
@@ -559,6 +566,12 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <div class="rating-row" id="rating-row">
+      <button class="rating-btn rating-hard" type="button" onclick="rate(0)">難しかった<span>すぐ再出題</span></button>
+      <button class="rating-btn rating-okay" type="button" onclick="rate(3)">まあまあ<span>ふつう間隔</span></button>
+      <button class="rating-btn rating-great" type="button" onclick="rate(5)">バッチリ<span>間隔のばす</span></button>
     </div>
 
     <div class="test-panel" id="test-panel" aria-live="polite">
@@ -645,11 +658,12 @@
 
   <div class="panel">
     <div class="section-title">出題範囲</div>
-    <div class="option-grid">
+    <div class="option-grid three">
       <button class="option-btn study-scope-btn active" type="button" data-study-scope="all" onclick="setStudyScope('all')">全カード<span>標準</span></button>
+      <button class="option-btn study-scope-btn" type="button" data-study-scope="due" onclick="setStudyScope('due')">今日の復習<span>期限が来た分</span></button>
       <button class="option-btn study-scope-btn" type="button" data-study-scope="unmastered" onclick="setStudyScope('unmastered')">未習得のみ<span>習得済みはお休み</span></button>
     </div>
-    <div class="note">「未習得のみ」にすると、3回正解して習得済みになったカードは出題されなくなります。</div>
+    <div class="note">「今日の復習」は、忘れる頃合いを計算して期限が来たカードだけを出します（おすすめ）。覚え具合は3つのボタン（難しかった・まあまあ・バッチリ）で記録され、次に出るタイミングが自動で変わります。</div>
   </div>
 
   <div class="panel">
@@ -1195,7 +1209,8 @@ const TEST_CHOICE_COUNT_OPTIONS = [2, 3, 4];
 const STUDY_SCOPE_STORAGE_KEY = 'sakusaku_swahili_study_scope_v1';
 const STUDY_SCOPES = {
   all: '全カード',
-  unmastered: '未習得のみ'
+  unmastered: '未習得のみ',
+  due: '今日の復習'
 };
 const DISPLAY_ORDERS = {
   random: 'ランダム',
@@ -1666,6 +1681,7 @@ function getPhrasesByCategory(category = currentCategory) {
 }
 function getActivePhrases() {
   const phrases = getPhrasesByCategory();
+  if (currentStudyScope === 'due') return getDueCards();
   if (currentStudyScope !== 'unmastered') return phrases;
   const data = loadData();
   return phrases.filter(item => !data[getCardKey(item)]?.mastered);
@@ -1694,15 +1710,69 @@ function shuffle(items) {
   }
   return arr;
 }
-function updateCard(item, correct) {
+function normalizeReviewQuality(q) {
+  if (q === true) return 4;
+  if (q === false) return 1;
+  const n = Number(q);
+  if (!Number.isFinite(n)) return 3;
+  return Math.max(0, Math.min(5, Math.round(n)));
+}
+function updateCard(item, q) {
   const data = loadData();
   const key = getCardKey(item);
-  const row = data[key] || { seen: 0, correct: 0, mastered: false };
+  const quality = normalizeReviewQuality(q);
+  const row = { seen: 0, correct: 0, n: 0, ef: 2.5, interval: 1, nextDate: 0, ...(data[key] || {}) };
+  const prevEf = Number.isFinite(Number(row.ef)) ? Number(row.ef) : 2.5;
+  const prevInterval = Number.isFinite(Number(row.interval)) ? Number(row.interval) : 1;
+  const prevN = Number.isFinite(Number(row.n)) ? Number(row.n) : 0;
   row.seen += 1;
-  if (correct) row.correct += 1;
-  row.mastered = row.correct >= 3;
+  if (quality >= 3) {
+    row.correct += 1;
+    if (prevN === 0) row.interval = 1;
+    else if (prevN === 1) row.interval = 6;
+    else row.interval = Math.max(1, Math.round(prevInterval * prevEf));
+    row.n = prevN + 1;
+  } else {
+    row.n = 0;
+    row.interval = 1;
+    row.lapses = (Number(row.lapses) || 0) + 1;
+  }
+  row.ef = Math.max(1.3, prevEf + 0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
+  row.lastQuality = quality;
+  row.reviewedAt = Date.now();
+  const next = new Date();
+  next.setDate(next.getDate() + row.interval);
+  row.nextDate = next.getTime();
+  row.mastered = row.n >= 3 && row.interval >= 7;
   data[key] = row;
   saveData(data);
+}
+function migrateProgressData() {
+  const data = loadData();
+  let changed = false;
+  Object.keys(data).forEach(key => {
+    const row = data[key];
+    if (!row || typeof row !== 'object' || row.ef !== undefined) return;
+    const correct = Number(row.correct) || 0;
+    if (row.mastered) {
+      row.n = 3;
+      row.ef = 2.5;
+      row.interval = 7;
+      row.nextDate = Date.now() + 7 * 24 * 60 * 60 * 1000;
+    } else {
+      row.n = Math.min(correct, 2);
+      row.ef = 2.5;
+      row.interval = row.n >= 2 ? 6 : 1;
+      row.nextDate = 0;
+    }
+    changed = true;
+  });
+  if (changed) saveData(data);
+}
+function getDueCards() {
+  const data = loadData();
+  const now = Date.now();
+  return getPhrasesByCategory().filter(item => (data[getCardKey(item)] || { nextDate: 0 }).nextDate <= now);
 }
 function updateModeButtons() {
   document.getElementById('learn-mode-btn').classList.toggle('active', currentMode === 'learn');
@@ -1754,7 +1824,7 @@ function updateStats() {
   const data = loadData();
   const active = getActivePhrases();
   const mastered = getPhrasesByCategory().filter(item => data[getCardKey(item)]?.mastered).length;
-  const scopeSuffix = currentStudyScope === 'unmastered' ? '・未習得のみ' : '';
+  const scopeSuffix = currentStudyScope === 'unmastered' ? '・未習得のみ' : currentStudyScope === 'due' ? '・今日の復習' : '';
   document.getElementById('stat-today').textContent = reviewedToday;
   document.getElementById('stat-mastered').textContent = mastered;
   document.getElementById('scope-text').textContent = currentMode === 'test'
@@ -1888,10 +1958,14 @@ function startSession() {
   document.getElementById('study-prompt').textContent = 'タップすると日本語が出るよ';
   document.getElementById('study-prompt').style.display = 'block';
   document.getElementById('card-container').style.display = 'block';
+  document.getElementById('rating-row').style.display = 'flex';
   document.getElementById('test-panel').style.display = 'none';
   document.getElementById('swipe-msg').style.display = 'block';
   if (!sessionCards.length) {
-    showEmptySet(currentStudyScope === 'unmastered' ? 'このカテゴリは全部習得済みです。設定の「出題範囲」を全カードに戻すと復習できます' : 'この条件の学習カードはありません');
+    showEmptySet(
+      currentStudyScope === 'due' ? '今日の復習はありません。よくがんばりました！'
+      : currentStudyScope === 'unmastered' ? 'このカテゴリは全部習得済みです。設定の「出題範囲」を全カードに戻すと復習できます'
+      : 'この条件の学習カードはありません');
     updateStats();
     return;
   }
@@ -1940,6 +2014,7 @@ function showEmptySet(message) {
   document.getElementById('study-prompt').textContent = message;
   document.getElementById('study-prompt').style.display = 'block';
   document.getElementById('card-container').style.display = 'none';
+  document.getElementById('rating-row').style.display = 'none';
   document.getElementById('test-panel').style.display = 'none';
   document.getElementById('swipe-msg').style.display = 'block';
   document.getElementById('swipe-msg').textContent = '設定で「全カード」または別のカテゴリを選んでください';
@@ -1951,12 +2026,12 @@ function flipCard() {
   isFlipped = !isFlipped;
   document.getElementById('card').classList.toggle('flipped', isFlipped);
 }
-function rate(correct) {
+function rate(quality) {
   if (currentIndex >= sessionCards.length) return;
   const item = sessionCards[currentIndex];
   const key = getCardKey(item);
   if (!sessionReviewedKeys.has(key)) {
-    updateCard(item, correct);
+    updateCard(item, quality);
     reviewedToday++;
     sessionReviewedKeys.add(key);
   }
@@ -1983,6 +2058,7 @@ function startTestSession() {
   document.getElementById('session-complete').style.display = 'none';
   document.getElementById('study-prompt').style.display = 'none';
   document.getElementById('card-container').style.display = 'none';
+  document.getElementById('rating-row').style.display = 'none';
   document.getElementById('swipe-msg').style.display = 'none';
   document.getElementById('test-panel').style.display = 'block';
   if (!testCards.length) {
@@ -2048,7 +2124,7 @@ function answerTestChoice(button, item) {
   if (!correct) button.classList.add('wrong');
   const key = getCardKey(item);
   if (!sessionReviewedKeys.has(key)) {
-    updateCard(item, correct);
+    updateCard(item, correct ? 4 : 1);
     reviewedToday++;
     sessionReviewedKeys.add(key);
   }
@@ -2068,6 +2144,7 @@ function showComplete() {
 function showTestComplete() {
   document.getElementById('study-prompt').style.display = 'none';
   document.getElementById('card-container').style.display = 'none';
+  document.getElementById('rating-row').style.display = 'none';
   document.getElementById('test-panel').style.display = 'none';
   document.getElementById('swipe-msg').style.display = 'none';
   document.getElementById('session-complete').style.display = 'block';
@@ -2122,7 +2199,7 @@ learnViewEl.addEventListener('touchend', event => {
   }
   if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
     lastTouchTime = Date.now();
-    dx > 0 ? rate(true) : showPreviousCard();
+    dx > 0 ? rate(3) : showPreviousCard();
   }
 }, { passive: true });
 document.addEventListener('keydown', event => {
@@ -2134,9 +2211,10 @@ document.addEventListener('keydown', event => {
     return;
   }
   if (event.key === ' ' || event.key === 'Enter' || event.key === 'ArrowUp') { event.preventDefault(); flipCard(); }
-  if (event.key === 'ArrowRight') { event.preventDefault(); rate(true); }
+  if (event.key === 'ArrowRight') { event.preventDefault(); rate(3); }
   if (event.key === 'ArrowLeft') { event.preventDefault(); showPreviousCard(); }
 });
+migrateProgressData();
 buildCategoryButtons();
 startSession();
 </script>
