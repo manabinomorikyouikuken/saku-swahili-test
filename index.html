@@ -1347,6 +1347,7 @@ const TEST_CHOICE_COUNT_STORAGE_KEY = 'sakusaku_swahili_test_choices_v1';
 const FRONT_GRAMMAR_HINTS_STORAGE_KEY = 'sakusaku_swahili_front_grammar_hints_v1';
 const LEGACY_FRONT_POS_VISIBILITY_STORAGE_KEY = 'sakusaku_swahili_front_pos_visible_v1';
 const TEST_CHOICE_COUNT_OPTIONS = [2, 3, 4];
+const TEST_ROUND_SIZE = 10;
 const STUDY_SCOPE_STORAGE_KEY = 'sakusaku_swahili_study_scope_v1';
 const STUDY_SCOPES = {
   all: '全カード',
@@ -2390,7 +2391,7 @@ function startTestSession() {
   updateModeButtons();
   updateTestChoiceButtons();
   document.getElementById('learn-view').classList.add('test-mode');
-  testCards = shuffle(getActivePhrases());
+  testCards = shuffle(getActivePhrases()).slice(0, TEST_ROUND_SIZE);
   testIndex = 0;
   testCorrect = 0;
   testAnswered = false;
@@ -2527,7 +2528,7 @@ function showTestComplete() {
   document.getElementById('progress-text').textContent = `${testCards.length} / ${testCards.length}`;
   const misses = Math.max(0, testCards.length - testCorrect);
   document.getElementById('complete-icon').textContent = testCards.length && misses === 0 ? '◎' : '✓';
-  document.getElementById('complete-title').textContent = 'サクサクテスト完了！';
+  document.getElementById('complete-title').textContent = misses === 0 ? '満点！テスト完了' : 'テスト完了！';
   document.getElementById('cs-reviewed-label').textContent = '出題';
   document.getElementById('cs-mastered-label').textContent = '正解';
   document.getElementById('cs-due-label').textContent = 'ミス';
@@ -2536,8 +2537,8 @@ function showTestComplete() {
   document.getElementById('cs-mastered').textContent = testCorrect;
   document.getElementById('cs-due').textContent = misses;
   document.getElementById('complete-msg').textContent = misses === 0
-    ? `全問正解！満点です。\n「${getScopeLabel()}」${testCards.length}カードを答えられました。`
-    : `「${getScopeLabel()}」${testCards.length}カード中 ${testCorrect}問正解です。\n間違えたカードは、もう一度確認しましょう。`;
+    ? `全${testCards.length}問正解、満点です！\nこの調子で続けましょう。`
+    : `${testCards.length}問中 ${testCorrect}問正解！\n間違えた語は学習モードで復習しましょう。`;
 }
 function isControlTarget(target) {
   return Boolean(target.closest('button, a, input, select, textarea, label'));
