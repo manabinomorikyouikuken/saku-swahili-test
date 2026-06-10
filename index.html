@@ -359,15 +359,17 @@
     }
     .test-choice-card.correct .test-choice-label { background: #16a34a; color: #fff; }
     .test-choice-card.wrong .test-choice-label { background: #ef4444; color: #fff; }
-    .test-letter-row {
+    .test-action-zone {
       --letter-gap: 9px;
       --letter-size: min(46vw, 184px);
+      width: var(--letter-size);
+      margin: 14px auto 0;
+    }
+    .test-letter-row {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: var(--letter-gap);
-      width: var(--letter-size);
-      max-width: 100%;
-      margin: 14px auto 0;
+      width: 100%;
     }
     .test-letter-row.count-2 { min-height: var(--letter-size); align-content: center; }
     .test-letter-row.count-3 .test-letter-btn:nth-child(1) {
@@ -408,16 +410,27 @@
     .test-next-btn {
       display: none;
       width: 100%;
-      margin-top: 8px;
+      aspect-ratio: 1 / 1;
       border: none;
       background: #15803d;
       color: white;
-      border-radius: 13px;
-      padding: 12px 16px;
-      font-size: 14px;
+      border-radius: 16px;
+      font-size: 20px;
       font-weight: 900;
       cursor: pointer;
       touch-action: manipulation;
+      box-shadow: 0 3px 10px rgba(15,23,42,0.12);
+    }
+    /* テスト中は下部ナビを隠し、解答ゾーンを最下段に固定（片手操作しやすく） */
+    #learn-view.test-mode .learn-bottom-bar { display: none; }
+    #learn-view.test-mode .test-panel { margin-bottom: calc(var(--letter-size, 184px) + 28px + env(safe-area-inset-bottom)); }
+    #learn-view.test-mode .test-action-zone {
+      position: fixed;
+      left: 50%;
+      bottom: calc(14px + env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      z-index: 12;
+      margin: 0;
     }
     .session-complete {
       display: none;
@@ -655,9 +668,11 @@
     <div class="test-panel" id="test-panel" aria-live="polite">
       <div class="test-word-card"><div class="test-word-text" id="test-word-text">-</div></div>
       <div class="test-choice-grid" id="test-choice-grid"></div>
-      <div class="test-letter-row" id="test-letter-row" aria-label="ABC解答ボタン"></div>
       <div class="test-feedback" id="test-feedback"></div>
-      <button class="test-next-btn" id="test-next-btn" type="button" onclick="showNextTestQuestion()">次へ</button>
+      <div class="test-action-zone" id="test-action-zone">
+        <div class="test-letter-row" id="test-letter-row" aria-label="ABC解答ボタン"></div>
+        <button class="test-next-btn" id="test-next-btn" type="button" onclick="showNextTestQuestion()">次へ</button>
+      </div>
     </div>
 
     <div id="session-complete" class="session-complete">
@@ -2414,6 +2429,7 @@ function showTestQuestion() {
   document.getElementById('test-word-text').textContent = getDisplaySwahili(item);
   document.getElementById('test-feedback').textContent = '';
   document.getElementById('test-next-btn').style.display = 'none';
+  document.getElementById('test-letter-row').style.display = 'grid';
   const grid = document.getElementById('test-choice-grid');
   const letterRow = document.getElementById('test-letter-row');
   grid.innerHTML = '';
@@ -2486,6 +2502,7 @@ function answerTest(index, item) {
     sessionReviewedKeys.add(key);
   }
   document.getElementById('test-feedback').textContent = correct ? '正解！' : `正解は「${item.jp}」`;
+  document.getElementById('test-letter-row').style.display = 'none';
   document.getElementById('test-next-btn').style.display = 'block';
   updateStats();
 }
