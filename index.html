@@ -434,13 +434,16 @@
     }
     .session-complete {
       display: none;
-      width: min(92%, 420px);
-      margin: 0 auto calc(64px + env(safe-area-inset-bottom));
-      padding: 24px 18px;
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 460px;
+      padding: 20px 12px calc(12px + env(safe-area-inset-bottom));
       background: white;
-      border-radius: 18px;
-      box-shadow: 0 6px 30px rgba(15,23,42,0.1);
       text-align: center;
+      box-shadow: 0 -6px 30px rgba(15,23,42,0.1);
     }
     .complete-icon { font-size: 38px; margin-bottom: 8px; }
     .complete-title { color: #1a2a4a; font-size: 19px; font-weight: 900; margin-bottom: 6px; }
@@ -454,14 +457,17 @@
     .complete-stat-label { color: #94a3b8; font-size: 10px; margin-top: 3px; }
     .complete-msg { color: #64748b; font-size: 12.5px; line-height: 1.55; margin-bottom: 14px; white-space: pre-line; }
     .restart-btn {
+      width: 100%;
+      aspect-ratio: 1 / 1;
       border: none;
-      background: linear-gradient(135deg, #15803d, #38bdf8);
+      background: #15803d;
       color: white;
-      border-radius: 12px;
-      padding: 12px 24px;
-      font-size: 14px;
+      border-radius: 16px;
+      font-size: 20px;
       font-weight: 900;
       cursor: pointer;
+      touch-action: manipulation;
+      box-shadow: 0 3px 10px rgba(15,23,42,0.12);
       touch-action: manipulation;
     }
     .learn-bottom-bar {
@@ -693,7 +699,7 @@
         </div>
       </div>
       <div class="complete-msg" id="complete-msg"></div>
-      <button class="restart-btn" id="restart-btn" type="button" onclick="restartCurrentMode()">もう一周する</button>
+      <button class="restart-btn" id="restart-btn" type="button" onclick="restartCurrentMode()">もう一度</button>
     </div>
 
     <div class="swipe-msg" id="swipe-msg"></div>
@@ -2386,12 +2392,33 @@ function showPreviousCard() {
   showCard();
   updateStats();
 }
+function getTestPriority(row) {
+  if (row.mastered) return 0;
+  const today = Math.floor(Date.now() / 86400000);
+  const nextDate = row.nextDate || 0;
+  if (nextDate <= today && row.nextDate > 0) return 1000 + (row.seen || 0);
+  const correctRate = row.seen > 0 ? row.correct / row.seen : 0;
+  if (correctRate < 0.3) return 500 + (row.seen || 0);
+  return 100 + (row.seen || 0);
+}
 function startTestSession() {
   currentMode = 'test';
   updateModeButtons();
   updateTestChoiceButtons();
   document.getElementById('learn-view').classList.add('test-mode');
-  testCards = shuffle(getActivePhrases()).slice(0, TEST_ROUND_SIZE);
+  const data = loadData();
+  const candidates = getActivePhrases();
+  const sorted = candidates.sort((a, b) => {
+    const aKey = getCardKey(a);
+    const bKey = getCardKey(b);
+    const aRow = data[aKey] || { seen: 0, correct: 0, n: 0, ef: 2.5, interval: 1, nextDate: 0, mastered: false };
+    const bRow = data[bKey] || { seen: 0, correct: 0, n: 0, ef: 2.5, interval: 1, nextDate: 0, mastered: false };
+    const aPri = getTestPriority(aRow);
+    const bPri = getTestPriority(bRow);
+    if (aPri !== bPri) return bPri - aPri;
+    return (aRow.nextDate || 0) - (bRow.nextDate || 0);
+  });
+  testCards = shuffle(sorted).slice(0, TEST_ROUND_SIZE);
   testIndex = 0;
   testCorrect = 0;
   testAnswered = false;
@@ -2532,7 +2559,6 @@ function showTestComplete() {
   document.getElementById('cs-reviewed-label').textContent = '出題';
   document.getElementById('cs-mastered-label').textContent = '正解';
   document.getElementById('cs-due-label').textContent = 'ミス';
-  document.getElementById('restart-btn').textContent = 'もう一度テスト';
   document.getElementById('cs-reviewed').textContent = testCards.length;
   document.getElementById('cs-mastered').textContent = testCorrect;
   document.getElementById('cs-due').textContent = misses;
