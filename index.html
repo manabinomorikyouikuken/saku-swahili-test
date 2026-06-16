@@ -462,6 +462,17 @@
       z-index: 12;
       margin: 0;
     }
+    #learn-view.test-mode.test-actions-flow .test-panel {
+      margin-bottom: calc(28px + env(safe-area-inset-bottom));
+    }
+    #learn-view.test-mode.test-actions-flow .test-action-zone {
+      position: static;
+      left: auto;
+      bottom: auto;
+      transform: none;
+      z-index: auto;
+      margin: 18px auto 0;
+    }
     .session-complete {
       display: none;
       position: fixed;
@@ -2419,7 +2430,7 @@ function startSession() {
   currentMode = 'learn';
   updateModeButtons();
   updateTestChoiceButtons();
-  document.getElementById('learn-view').classList.remove('test-mode');
+  document.getElementById('learn-view').classList.remove('test-mode', 'test-actions-flow');
   const active = getActivePhrases();
   sessionCards = orderStudyCards(active);
   currentIndex = 0;
@@ -2553,7 +2564,9 @@ function startTestSession() {
   currentMode = 'test';
   updateModeButtons();
   updateTestChoiceButtons();
-  document.getElementById('learn-view').classList.add('test-mode');
+  const learnView = document.getElementById('learn-view');
+  learnView.classList.add('test-mode');
+  learnView.classList.remove('test-actions-flow');
   const data = loadData();
   const candidates = getActivePhrases();
   const sorted = candidates.sort((a, b) => {
@@ -2653,6 +2666,7 @@ function showTestQuestion() {
   document.getElementById('progress-text').textContent = `${testIndex} / ${testCards.length}`;
   updateProgressBarA11y((testIndex / testCards.length) * 100, `${testIndex} / ${testCards.length}`);
   updateAudioButtonState();
+  syncTestActionLayout();
   if (autoSpeak) speakSwahili(item.sw);
   updateStats();
 }
@@ -2675,6 +2689,33 @@ function appendChoiceResultTag(button, label) {
   tag.className = 'choice-result-tag';
   tag.textContent = label;
   button.appendChild(tag);
+}
+function syncTestActionLayout() {
+  const view = document.getElementById('learn-view');
+  const actionZone = document.getElementById('test-action-zone');
+  const choiceGrid = document.getElementById('test-choice-grid');
+  const feedback = document.getElementById('test-feedback');
+  if (!view || !actionZone || !choiceGrid || currentMode !== 'test') {
+    view?.classList.remove('test-actions-flow');
+    return;
+  }
+  const applyLayout = () => {
+    if (currentMode !== 'test') return;
+    view.classList.remove('test-actions-flow');
+    const actionRect = actionZone.getBoundingClientRect();
+    const choiceCards = [...choiceGrid.querySelectorAll('.test-choice-card')];
+    const choiceBottom = choiceCards.reduce((bottom, card) => {
+      const rect = card.getBoundingClientRect();
+      return Math.max(bottom, rect.bottom);
+    }, 0);
+    const feedbackBottom = feedback && feedback.textContent.trim()
+      ? feedback.getBoundingClientRect().bottom
+      : 0;
+    const contentBottom = Math.max(choiceBottom, feedbackBottom);
+    view.classList.toggle('test-actions-flow', contentBottom + 18 > actionRect.top);
+  };
+  applyLayout();
+  requestAnimationFrame(applyLayout);
 }
 function answerTest(index, item) {
   if (testAnswered) return;
@@ -2714,6 +2755,7 @@ function answerTest(index, item) {
   announceA11y(correct ? `正解です。${item.sw} は ${item.jp} です。` : `不正解です。${item.sw} の正解は ${item.jp} です。`);
   document.getElementById('test-letter-row').style.display = 'none';
   document.getElementById('test-next-btn').style.display = 'block';
+  syncTestActionLayout();
   updateProgressBarA11y(((testIndex + 1) / testCards.length) * 100, `${testIndex + 1} / ${testCards.length}`);
   updateStats();
 }
@@ -2727,6 +2769,7 @@ function showComplete() {
   startSession();
 }
 function showTestComplete() {
+  document.getElementById('learn-view').classList.remove('test-actions-flow');
   document.getElementById('study-prompt').style.display = 'none';
   document.getElementById('card-container').style.display = 'none';
   document.getElementById('rating-row').style.display = 'none';
@@ -2811,6 +2854,9 @@ document.addEventListener('keydown', event => {
   if (event.key === ' ' || event.key === 'Enter' || event.key === 'ArrowUp') { event.preventDefault(); flipCard(); }
   if (event.key === 'ArrowRight') { event.preventDefault(); rate(3); }
   if (event.key === 'ArrowLeft') { event.preventDefault(); showPreviousCard(); }
+});
+window.addEventListener('resize', () => {
+  if (currentMode === 'test') syncTestActionLayout();
 });
 migrateProgressData();
 if (speechSupported) {
