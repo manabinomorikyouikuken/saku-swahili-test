@@ -2661,7 +2661,7 @@ function showTestQuestion() {
     lbtn.dataset.index = index;
     lbtn.dataset.correct = choice.correct ? 'true' : 'false';
     lbtn.textContent = letter;
-    lbtn.setAttribute('aria-label', `${index + 1}キーで${letter}を選ぶ`);
+    lbtn.setAttribute('aria-label', `${index + 1}キーで${letter}、${choice.item.jp}を選ぶ`);
     lbtn.onclick = () => answerTest(index, item);
     letterRow.appendChild(lbtn);
   });
