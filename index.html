@@ -625,6 +625,16 @@
     .audio-btn { width: 48px; height: 48px; border-radius: 50%; border: 1px solid #cbd5e1; background: #fff; font-size: 22px; line-height: 1; cursor: pointer; box-shadow: 0 2px 6px rgba(15,23,42,0.12); display: flex; align-items: center; justify-content: center; padding: 0; }
     .audio-btn:active { transform: scale(0.92); }
     .audio-btn.audio-off { opacity: 0.45; }
+    .test-audio-row { margin: 10px auto 0; }
+    .test-audio-btn { width: 44px; height: 44px; font-size: 20px; }
+    .test-audio-status {
+      margin: 4px auto 0;
+      color: #64748b;
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1.35;
+      text-align: center;
+    }
     .audio-toggle-btn span, .autospeak-btn span { font-size: 10px; font-weight: 500; color: #64748b; }
     #voice-status { font-size: 11px; color: #475569; margin-top: 6px; line-height: 1.4; }
     .badge-toast { position: fixed; top: 14px; left: 50%; transform: translate(-50%, -80px); background: #1e293b; color: #fff; padding: 10px 18px; border-radius: 999px; font-size: 14px; font-weight: 700; box-shadow: 0 6px 18px rgba(15, 23, 42, 0.35); transition: transform 0.35s ease; z-index: 99; pointer-events: none; }
@@ -712,6 +722,10 @@
 
     <div class="test-panel" id="test-panel" aria-live="polite" aria-label="テスト問題">
       <div class="test-word-card" role="group" aria-label="出題語"><div class="test-word-text" id="test-word-text">-</div></div>
+      <div class="audio-btn-row test-audio-row" id="test-audio-row">
+        <button class="audio-btn test-audio-btn" id="test-audio-btn" type="button" aria-label="出題語の発音を聞く" onclick="speakCurrentTestQuestion()">🔊</button>
+      </div>
+      <div class="test-audio-status" id="test-audio-status" role="status" aria-live="polite" hidden></div>
       <div class="test-choice-grid" id="test-choice-grid" role="group" aria-label="意味を選ぶ"></div>
       <div class="test-feedback" id="test-feedback" role="status" aria-live="polite" aria-atomic="true"></div>
       <div class="test-action-zone" id="test-action-zone">
@@ -1967,13 +1981,40 @@ function speakCurrentCard() {
     showBadgeToast({ icon: '🔈', label: 'この端末に音声がありません' });
   }
 }
+function speakCurrentTestQuestion() {
+  if (currentMode !== 'test' || !testCards[testIndex]) return;
+  const item = testCards[testIndex];
+  if (!speakSwahili(item.sw) && !audioEnabled) {
+    announceA11y('音声はオフです。設定でオンにできます。');
+    showBadgeToast({ icon: '🔇', label: '音声はオフです（設定でオン）' });
+  } else if (!speechSupported || !(cachedVoice || resolveVoice())) {
+    announceA11y('この端末では音声読み上げを利用できません。文字表示で学習できます。');
+    showBadgeToast({ icon: '🔈', label: 'この端末に音声がありません' });
+  }
+}
+function getAudioUnavailableLabel() {
+  if (!audioEnabled) return '音声はオフです。設定でオンにできます。';
+  return getVoiceStatusLabel();
+}
 function updateAudioButtonState() {
-  const btn = document.getElementById('audio-btn');
-  if (!btn) return;
   const usable = audioEnabled && speechSupported;
-  btn.classList.toggle('audio-off', !usable);
-  btn.textContent = usable ? '🔊' : '🔇';
-  btn.setAttribute('aria-label', usable ? '発音を聞く' : '音声オフ');
+  const unavailableLabel = getAudioUnavailableLabel();
+  [
+    { id: 'audio-btn', label: '発音を聞く' },
+    { id: 'test-audio-btn', label: '出題語の発音を聞く' }
+  ].forEach(({ id, label }) => {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    btn.classList.toggle('audio-off', !usable);
+    btn.textContent = usable ? '🔊' : '🔇';
+    btn.setAttribute('aria-label', usable ? label : unavailableLabel);
+    btn.title = usable ? label : unavailableLabel;
+  });
+  const testStatus = document.getElementById('test-audio-status');
+  if (testStatus) {
+    testStatus.textContent = usable ? '' : unavailableLabel;
+    testStatus.hidden = usable;
+  }
 }
 function setAudioEnabled(on) {
   audioEnabled = Boolean(on);
@@ -1986,6 +2027,10 @@ function setAutoSpeak(on) {
   autoSpeak = Boolean(on);
   localStorage.setItem(AUTO_SPEAK_STORAGE_KEY, autoSpeak ? 'on' : 'off');
   updateAudioButtons();
+  if (autoSpeak) {
+    if (currentMode === 'learn' && sessionCards[currentIndex]) speakSwahili(sessionCards[currentIndex].sw);
+    if (currentMode === 'test' && !testAnswered && testCards[testIndex]) speakSwahili(testCards[testIndex].sw);
+  }
 }
 function updateAudioButtons() {
   document.querySelectorAll('.audio-toggle-btn').forEach(btn => {
@@ -2575,6 +2620,8 @@ function showTestQuestion() {
   document.getElementById('progress-fill').style.width = `${(testIndex / testCards.length) * 100}%`;
   document.getElementById('progress-text').textContent = `${testIndex} / ${testCards.length}`;
   updateProgressBarA11y((testIndex / testCards.length) * 100, `${testIndex} / ${testCards.length}`);
+  updateAudioButtonState();
+  if (autoSpeak) speakSwahili(item.sw);
   updateStats();
 }
 function triggerWrongAnswerCue() {
