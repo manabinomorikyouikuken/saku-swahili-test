@@ -2652,6 +2652,7 @@ function showTestQuestion() {
     card.appendChild(label);
     card.appendChild(text);
     card.setAttribute('aria-label', `${index + 1}キーで${letter}、${choice.item.jp}を選ぶ`);
+    card.tabIndex = -1;
     card.onclick = () => answerTest(index, item);
     grid.appendChild(card);
     // 正方形の文字ボタン
