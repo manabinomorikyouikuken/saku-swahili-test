@@ -1,0 +1,10 @@
+# Local preview settings
+.claude/
+
+# Local duplicate or backup files
+index 2.html
+*.bak
+*.bak_*
+
+# OS-generated files
+.DS_Store

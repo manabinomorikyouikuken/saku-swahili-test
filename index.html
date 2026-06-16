@@ -622,9 +622,19 @@
     .rating-btn.rating-great { border-color: #86efac; color: #15803d; }
     .rating-btn:active { transform: scale(0.97); }
     .audio-btn-row { display: flex; justify-content: center; margin-top: 12px; }
-    .audio-btn { width: 48px; height: 48px; border-radius: 50%; border: 1px solid #cbd5e1; background: #fff; font-size: 22px; line-height: 1; cursor: pointer; box-shadow: 0 2px 6px rgba(15,23,42,0.12); display: flex; align-items: center; justify-content: center; padding: 0; }
+    .audio-btn { min-width: 92px; height: 50px; border-radius: 999px; border: 2px solid #0f766e; background: #fff; color: #0f766e; font-size: 16px; line-height: 1; font-weight: 800; cursor: pointer; box-shadow: 0 2px 6px rgba(15,23,42,0.12); display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 0 16px; }
+    .speaker-icon { position: relative; display: inline-block; width: 26px; height: 24px; flex: 0 0 26px; }
+    .speaker-icon::before { content: ""; position: absolute; left: 1px; top: 8px; width: 7px; height: 8px; border-radius: 3px; background: currentColor; }
+    .speaker-cone { position: absolute; left: 7px; top: 4px; width: 0; height: 0; border-top: 8px solid transparent; border-bottom: 8px solid transparent; border-right: 12px solid currentColor; }
+    .speaker-wave { position: absolute; top: 5px; border: 2px solid currentColor; border-left: 0; border-top-color: transparent; border-bottom-color: transparent; border-radius: 0 999px 999px 0; opacity: 0.9; }
+    .speaker-wave.one { left: 18px; width: 5px; height: 14px; }
+    .speaker-wave.two { left: 21px; top: 2px; width: 8px; height: 20px; opacity: 0.55; }
+    .speaker-mute { position: absolute; left: 18px; top: 2px; width: 3px; height: 22px; border-radius: 999px; background: currentColor; transform: rotate(42deg); opacity: 0; }
+    .audio-btn-label { min-width: 2.2em; text-align: left; }
     .audio-btn:active { transform: scale(0.92); }
-    .audio-btn.audio-off { opacity: 0.45; }
+    .audio-btn.audio-off { border-color: #94a3b8; color: #64748b; background: #f8fafc; }
+    .audio-btn.audio-off .speaker-wave { opacity: 0; }
+    .audio-btn.audio-off .speaker-mute { opacity: 1; }
     .test-audio-row { margin: 10px auto 0; }
     .test-audio-btn { width: 44px; height: 44px; font-size: 20px; }
     .test-audio-status {
@@ -711,7 +721,15 @@
     </div>
 
     <div class="audio-btn-row" id="audio-btn-row">
-      <button class="audio-btn" id="audio-btn" type="button" aria-label="発音を聞く" onclick="speakCurrentCard()">🔊</button>
+      <button class="audio-btn" id="audio-btn" type="button" aria-label="発音を聞く" onclick="speakCurrentCard()">
+        <span class="speaker-icon" aria-hidden="true">
+          <span class="speaker-cone"></span>
+          <span class="speaker-wave one"></span>
+          <span class="speaker-wave two"></span>
+          <span class="speaker-mute"></span>
+        </span>
+        <span class="audio-btn-label">聴く</span>
+      </button>
     </div>
 
     <div class="rating-row" id="rating-row">
@@ -2006,7 +2024,12 @@ function updateAudioButtonState() {
     const btn = document.getElementById(id);
     if (!btn) return;
     btn.classList.toggle('audio-off', !usable);
-    btn.textContent = usable ? '🔊' : '🔇';
+    const visibleLabel = btn.querySelector('.audio-btn-label');
+    if (visibleLabel) {
+      visibleLabel.textContent = usable ? '聴く' : (speechSupported ? 'オフ' : '音声なし');
+    } else {
+      btn.textContent = usable ? '🔊' : '🔇';
+    }
     btn.setAttribute('aria-label', usable ? label : unavailableLabel);
     btn.title = usable ? label : unavailableLabel;
   });
