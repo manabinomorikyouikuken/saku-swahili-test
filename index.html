@@ -2735,12 +2735,15 @@ function answerTest(index, item) {
     if (btn.dataset.correct === 'true') btn.classList.add('correct');
     else if (idx === index) btn.classList.add('wrong');
     const letter = btn.textContent.trim().slice(0, 1);
+    const meaning = currentTestChoices[idx]?.item.jp || '';
     if (btn.dataset.correct === 'true') {
-      btn.setAttribute('aria-label', `${letter} 正解`);
+      btn.setAttribute('aria-label', `${letter}、${meaning}。正解です`);
       appendChoiceResultTag(btn, '正解');
     } else if (idx === index) {
-      btn.setAttribute('aria-label', `${letter} 選択。不正解`);
+      btn.setAttribute('aria-label', `${letter}、${meaning}。選択しました。不正解です`);
       appendChoiceResultTag(btn, '選択');
+    } else {
+      btn.setAttribute('aria-label', `${letter}、${meaning}`);
     }
   });
   const key = getCardKey(item);
