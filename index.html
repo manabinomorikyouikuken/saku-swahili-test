@@ -699,7 +699,7 @@
   </div>
 </header>
 
-<div class="badge-toast" id="badge-toast" aria-live="polite"></div>
+<div class="badge-toast" id="badge-toast" role="status" aria-live="polite" aria-atomic="true"></div>
 <div class="sr-only" id="a11y-live" role="status" aria-live="polite" aria-atomic="true"></div>
 
 <main id="learn-view" class="main">
@@ -748,9 +748,9 @@
     </div>
 
     <div class="rating-row" id="rating-row">
-      <button class="rating-btn rating-hard" type="button" onclick="rate(0)">難しかった<span>すぐ再出題</span></button>
-      <button class="rating-btn rating-okay" type="button" onclick="rate(3)">まあまあ<span>ふつう間隔</span></button>
-      <button class="rating-btn rating-great" type="button" onclick="rate(5)">バッチリ<span>間隔のばす</span></button>
+      <button class="rating-btn rating-hard" type="button" aria-label="難しかった。すぐ再出題する" onclick="rate(0)">難しかった<span>すぐ再出題</span></button>
+      <button class="rating-btn rating-okay" type="button" aria-label="まあまあ。ふつうの間隔で復習する" onclick="rate(3)">まあまあ<span>ふつう間隔</span></button>
+      <button class="rating-btn rating-great" type="button" aria-label="バッチリ。復習間隔をのばす" onclick="rate(5)">バッチリ<span>間隔のばす</span></button>
     </div>
 
     <div class="test-panel" id="test-panel" aria-live="polite" aria-label="テスト問題">
@@ -2017,9 +2017,9 @@ function speakCurrentCard() {
   if (currentIndex >= sessionCards.length) return;
   const item = sessionCards[currentIndex];
   if (!speakSwahili(item.sw) && !audioEnabled) {
-    showBadgeToast({ icon: '🔇', label: '音声はオフです（設定でオン）' });
+    showBadgeToast({ message: '🔇 音声はオフです（設定でオン）' });
   } else if (!speechSupported || !(cachedVoice || resolveVoice())) {
-    showBadgeToast({ icon: '🔈', label: 'この端末に音声がありません' });
+    showBadgeToast({ message: '🔈 この端末に音声がありません' });
   }
 }
 function speakCurrentTestQuestion() {
@@ -2027,10 +2027,10 @@ function speakCurrentTestQuestion() {
   const item = testCards[testIndex];
   if (!speakSwahili(item.sw) && !audioEnabled) {
     announceA11y('音声はオフです。設定でオンにできます。');
-    showBadgeToast({ icon: '🔇', label: '音声はオフです（設定でオン）' });
+    showBadgeToast({ message: '🔇 音声はオフです（設定でオン）' });
   } else if (!speechSupported || !(cachedVoice || resolveVoice())) {
     announceA11y('この端末では音声読み上げを利用できません。文字表示で学習できます。');
-    showBadgeToast({ icon: '🔈', label: 'この端末に音声がありません' });
+    showBadgeToast({ message: '🔈 この端末に音声がありません' });
   }
 }
 function getAudioUnavailableLabel() {
@@ -2164,7 +2164,7 @@ function checkAndAwardBadges() {
 function showBadgeToast(badge) {
   const el = document.getElementById('badge-toast');
   if (!el) return;
-  el.textContent = `${badge.icon} バッジ獲得！ ${badge.label}`;
+  el.textContent = badge.message || `${badge.icon} バッジ獲得！ ${badge.label}`;
   el.classList.add('show');
   clearTimeout(showBadgeToast._timer);
   showBadgeToast._timer = setTimeout(() => el.classList.remove('show'), 2600);
