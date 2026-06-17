@@ -497,6 +497,60 @@
     .complete-stat-num { display: block; color: #15803d; font-size: 24px; font-weight: 900; line-height: 1; }
     .complete-stat-label { color: #94a3b8; font-size: 10px; margin-top: 3px; }
     .complete-msg { color: #64748b; font-size: 12.5px; line-height: 1.55; margin-bottom: 14px; white-space: pre-line; }
+    .complete-achievement {
+      display: none;
+      margin: -2px 0 12px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: #fefce8;
+      border: 1px solid #fde047;
+      color: #713f12;
+      font-size: 12px;
+      font-weight: 900;
+      line-height: 1.45;
+      white-space: pre-line;
+    }
+    .complete-achievement.is-visible { display: block; }
+    .session-complete.perfect-complete .complete-icon {
+      width: 56px;
+      height: 56px;
+      display: grid;
+      place-items: center;
+      margin: 0 auto 8px;
+      border-radius: 999px;
+      background: #fef3c7;
+      color: #b45309;
+      box-shadow: 0 6px 18px rgba(245,158,11,0.24);
+    }
+    .complete-route-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin: 4px 0 10px;
+    }
+    .complete-route-btn {
+      min-height: 42px;
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      color: #334155;
+      border-radius: 12px;
+      padding: 7px 6px;
+      font-size: 12px;
+      font-weight: 900;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+    .complete-route-btn.primary {
+      background: #1a2a4a;
+      border-color: #1a2a4a;
+      color: #fff;
+    }
+    .complete-route-btn:disabled,
+    .option-btn:disabled {
+      opacity: 0.48;
+      cursor: default;
+      transform: none;
+    }
     .restart-btn {
       display: grid;
       place-items: center;
@@ -513,6 +567,11 @@
       touch-action: manipulation;
       box-shadow: 0 3px 10px rgba(15,23,42,0.12);
       touch-action: manipulation;
+    }
+    .complete-route-actions + .restart-btn {
+      width: min(32vw, 124px);
+      font-size: 14px;
+      margin-top: 8px;
     }
     .learn-bottom-bar {
       position: fixed;
@@ -553,6 +612,63 @@
     }
     .settings-title { color: #1a2a4a; font-size: 20px; font-weight: 900; line-height: 1.25; }
     .settings-lead { color: #64748b; font-size: 12px; line-height: 1.55; margin-top: 4px; }
+    .settings-tabs {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 5px;
+      margin: 0 0 14px;
+      position: sticky;
+      top: 0;
+      z-index: 4;
+      padding: 6px 0;
+      background: #eef2f7;
+    }
+    .settings-tab {
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      color: #334155;
+      border-radius: 12px;
+      padding: 8px 3px;
+      font-size: 10.5px;
+      line-height: 1.15;
+      font-weight: 900;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+    .settings-tab.active {
+      background: #1a2a4a;
+      border-color: #1a2a4a;
+      color: #fff;
+    }
+    .settings-pager {
+      position: relative;
+      overflow: hidden;
+      transition: height 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+      touch-action: pan-y;
+    }
+    .settings-track {
+      display: flex;
+      align-items: flex-start;
+      width: 100%;
+      transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+      will-change: transform;
+    }
+    .settings-pane {
+      display: block;
+      flex: 0 0 100%;
+      min-width: 100%;
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.985);
+      transition:
+        opacity 0.14s ease,
+        transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .settings-pane.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: scale(1);
+    }
     .back-btn {
       flex: 0 0 auto;
       box-shadow: none;
@@ -623,6 +739,11 @@
         scroll-behavior: auto !important;
         transition-duration: 0.001ms !important;
       }
+      .settings-pager,
+      .settings-track,
+      .settings-pane {
+        transition: none;
+      }
     }
     .header-title-row { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; }
     .header-flags { display: block; height: 14px; width: auto; flex-shrink: 0; }
@@ -664,10 +785,38 @@
     #voice-status { font-size: 11px; color: #475569; margin-top: 6px; line-height: 1.4; }
     .badge-toast { position: fixed; top: 14px; left: 50%; transform: translate(-50%, -80px); background: #1e293b; color: #fff; padding: 10px 18px; border-radius: 999px; font-size: 14px; font-weight: 700; box-shadow: 0 6px 18px rgba(15, 23, 42, 0.35); transition: transform 0.35s ease; z-index: 99; pointer-events: none; }
     .badge-toast.show { transform: translate(-50%, 0); }
-    .record-stats { display: flex; gap: 8px; margin-bottom: 10px; }
-    .record-stat { flex: 1; background: #f1f5f9; border-radius: 12px; padding: 10px 4px; text-align: center; }
+    .record-stats { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+    .record-stat { flex: 1 1 calc(50% - 4px); background: #f1f5f9; border-radius: 12px; padding: 10px 4px; text-align: center; }
     .record-num { font-size: 20px; font-weight: 800; color: #1e293b; }
     .record-label { font-size: 10px; color: #64748b; margin-top: 2px; }
+    .growth-badge {
+      margin-bottom: 10px;
+      padding: 12px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #ecfdf5 0%, #eff6ff 100%);
+      border: 1px solid #bfdbfe;
+      color: #1e293b;
+    }
+    .growth-badge-label {
+      color: #64748b;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0;
+    }
+    .growth-badge-title {
+      margin-top: 3px;
+      color: #0f766e;
+      font-size: 16px;
+      font-weight: 900;
+      line-height: 1.25;
+    }
+    .growth-badge-message {
+      margin-top: 4px;
+      color: #475569;
+      font-size: 11.5px;
+      font-weight: 700;
+      line-height: 1.45;
+    }
     .badges-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 8px; }
     .badge-item { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 2px; border-radius: 10px; background: #f1f5f9; opacity: 0.35; filter: grayscale(1); }
     .badge-item.earned { opacity: 1; filter: none; background: #fefce8; border: 1px solid #fde047; }
@@ -793,6 +942,13 @@
         </div>
       </div>
       <div class="complete-msg" id="complete-msg"></div>
+      <div class="complete-achievement" id="complete-achievement" aria-live="polite"></div>
+      <div class="complete-route-actions" id="complete-route-actions" aria-label="次の行動">
+        <button class="complete-route-btn" id="complete-learn-btn" type="button" onclick="startSession()">学習へ</button>
+        <button class="complete-route-btn primary" id="complete-repeat-test-btn" type="button" onclick="startTestSession()">テストもう一回</button>
+        <button class="complete-route-btn" id="complete-miss-review-btn" type="button" onclick="startMissReviewSession()">ミス復習</button>
+        <button class="complete-route-btn" id="complete-settings-btn" type="button" onclick="showSettingsView()">設定</button>
+      </div>
       <button class="restart-btn" id="restart-btn" type="button" aria-label="もう一度同じモードで始める" onclick="restartCurrentMode()">もう一度</button>
     </div>
 
@@ -802,7 +958,7 @@
   <div class="learn-bottom-bar">
     <button class="nav-btn active" id="learn-mode-btn" type="button" aria-label="学習モードを始める" onclick="startSession()">学習</button>
     <button class="nav-btn test" id="test-mode-btn" type="button" aria-label="テストを始める" onclick="startTestSession()">テスト</button>
-    <button class="nav-btn" type="button" aria-label="設定を開く" onclick="showSettingsView()">設定</button>
+    <button class="nav-btn" id="settings-mode-btn" type="button" aria-label="設定を開く" onclick="showSettingsView()">設定</button>
   </div>
 </main>
 
@@ -815,6 +971,17 @@
     <button class="back-btn" type="button" onclick="showLearnView()">戻る</button>
   </div>
 
+  <div class="settings-tabs" role="tablist" aria-label="設定ページ切り替え">
+    <button class="settings-tab active" id="settings-tab-category" type="button" role="tab" aria-selected="true" aria-controls="settings-pane-category" data-settings-page="category" onclick="setSettingsPage('category')">範囲</button>
+    <button class="settings-tab" id="settings-tab-learn" type="button" role="tab" aria-selected="false" aria-controls="settings-pane-learn" data-settings-page="learn" onclick="setSettingsPage('learn')">学習</button>
+    <button class="settings-tab" id="settings-tab-test" type="button" role="tab" aria-selected="false" aria-controls="settings-pane-test" data-settings-page="test" onclick="setSettingsPage('test')">テスト</button>
+    <button class="settings-tab" id="settings-tab-audio" type="button" role="tab" aria-selected="false" aria-controls="settings-pane-audio" data-settings-page="audio" onclick="setSettingsPage('audio')">音声</button>
+    <button class="settings-tab" id="settings-tab-record" type="button" role="tab" aria-selected="false" aria-controls="settings-pane-record" data-settings-page="record" onclick="setSettingsPage('record')">記録</button>
+  </div>
+
+  <div class="settings-pager" id="settings-pager">
+    <div class="settings-track" id="settings-track">
+      <div class="settings-pane active" id="settings-pane-category" role="tabpanel" aria-labelledby="settings-tab-category" data-settings-page="category">
   <div class="panel">
     <div class="section-title">カテゴリを選ぶ</div>
     <div class="option-grid" id="category-buttons"></div>
@@ -831,6 +998,8 @@
     <div class="note">学習モードだけに反映します。サクサクテストはランダム固定です。</div>
   </div>
 
+      </div>
+      <div class="settings-pane" id="settings-pane-learn" role="tabpanel" aria-labelledby="settings-tab-learn" data-settings-page="learn">
   <div class="panel">
     <div class="section-title">カード表面の文法ヒント</div>
     <div class="option-grid">
@@ -838,16 +1007,6 @@
       <button class="option-btn front-grammar-btn" type="button" data-front-grammar="hide" onclick="setFrontGrammarVisibility(false)">非表示<span>思い出す練習</span></button>
     </div>
     <div class="note">慣れてきたら非表示にすると、品詞や名詞クラスを思い出す練習になります。</div>
-  </div>
-
-  <div class="panel">
-    <div class="section-title">サクサクテスト</div>
-    <div class="option-grid three">
-      <button class="option-btn test-choice-count-btn" type="button" data-test-choices="2" onclick="setTestChoiceCount(2)">2択</button>
-      <button class="option-btn test-choice-count-btn" type="button" data-test-choices="3" onclick="setTestChoiceCount(3)">3択</button>
-      <button class="option-btn test-choice-count-btn active" type="button" data-test-choices="4" onclick="setTestChoiceCount(4)">4択</button>
-    </div>
-    <div class="note">不正解時はカードが短く揺れます。対応端末では振動も試みます。</div>
   </div>
 
   <div class="panel">
@@ -860,6 +1019,20 @@
     <div class="note">「今日の復習」は、忘れる頃合いを計算して期限が来たカードだけを出します（おすすめ）。覚え具合は3つのボタン（難しかった・まあまあ・バッチリ）で記録され、次に出るタイミングが自動で変わります。</div>
   </div>
 
+      </div>
+      <div class="settings-pane" id="settings-pane-test" role="tabpanel" aria-labelledby="settings-tab-test" data-settings-page="test">
+  <div class="panel">
+    <div class="section-title">サクサクテスト</div>
+    <div class="option-grid three">
+      <button class="option-btn test-choice-count-btn" type="button" data-test-choices="2" onclick="setTestChoiceCount(2)">2択</button>
+      <button class="option-btn test-choice-count-btn" type="button" data-test-choices="3" onclick="setTestChoiceCount(3)">3択</button>
+      <button class="option-btn test-choice-count-btn active" type="button" data-test-choices="4" onclick="setTestChoiceCount(4)">4択</button>
+    </div>
+    <div class="note">不正解時はカードが短く揺れます。PCでは数字キー、回答後はEnterまたは右矢印で次へ進めます。</div>
+  </div>
+
+      </div>
+      <div class="settings-pane" id="settings-pane-audio" role="tabpanel" aria-labelledby="settings-tab-audio" data-settings-page="audio">
   <div class="panel">
     <div class="section-title">発音の音声</div>
     <div class="option-grid">
@@ -874,14 +1047,27 @@
     <div class="note">スワヒリ語はローマ字に近い発音です。端末にスワヒリ語の音声がない場合は、発音が近い言語（イタリア語など）で代わりに読み上げます。それも無い端末では、カタカナ読みをご利用ください。</div>
   </div>
 
+      </div>
+      <div class="settings-pane" id="settings-pane-record" role="tabpanel" aria-labelledby="settings-tab-record" data-settings-page="record">
   <div class="panel">
     <div class="section-title">がんばりの記録</div>
+    <div class="growth-badge" aria-label="今日の称号">
+      <div class="growth-badge-label">今日の称号</div>
+      <div class="growth-badge-title" id="growth-title">ウォームアップ</div>
+      <div class="growth-badge-message" id="growth-message">まずは短く1セット。続けるほど記録が残ります。</div>
+    </div>
     <div class="record-stats">
       <div class="record-stat"><span class="record-num" id="record-today">0</span><div class="record-label">今日の学習</div></div>
       <div class="record-stat"><span class="record-num" id="record-streak">0</span><div class="record-label">連続日数🔥</div></div>
       <div class="record-stat"><span class="record-num" id="record-mastered">0</span><div class="record-label">習得語数</div></div>
+      <div class="record-stat"><span class="record-num" id="record-miss-review">0</span><div class="record-label">ミス復習</div></div>
+      <div class="record-stat"><span class="record-num" id="record-correct-streak">0</span><div class="record-label">連続正解</div></div>
+      <div class="record-stat"><span class="record-num" id="record-perfect-rounds">0</span><div class="record-label">満点回数</div></div>
     </div>
     <div class="badges-grid" id="badges-grid"></div>
+    <div class="option-grid">
+      <button class="option-btn" id="settings-miss-review-btn" type="button" onclick="startMissReviewSession()">ミス復習<span id="settings-miss-review-count">0カード</span></button>
+    </div>
     <div class="note">毎日1枚でも学習すると連続日数がのびます。節目でバッジがもらえます。</div>
   </div>
 
@@ -898,6 +1084,9 @@
   <div class="panel">
     <div class="section-title">プロトタイプメモ</div>
     <div class="note">ケニア派遣隊員向けの試作です。実運用前に、現地経験者またはスワヒリ語講師による表現確認を入れてください。</div>
+  </div>
+      </div>
+    </div>
   </div>
 
   <div style="display:flex; justify-content:center; margin-top:14px;">
@@ -1443,6 +1632,8 @@ const CATEGORIES = {
 const STORAGE_KEY = 'sakusaku_swahili_progress_v1';
 const CATEGORY_STORAGE_KEY = 'sakusaku_swahili_category_v1';
 const DISPLAY_ORDER_STORAGE_KEY = 'sakusaku_swahili_display_order_v1';
+const SETTINGS_PAGE_STORAGE_KEY = 'sakusaku_swahili_settings_page_v1';
+const MISSED_REVIEW_STORAGE_KEY = 'sakusaku_swahili_missed_review_v1';
 const TEST_CHOICE_COUNT_STORAGE_KEY = 'sakusaku_swahili_test_choices_v1';
 const FRONT_GRAMMAR_HINTS_STORAGE_KEY = 'sakusaku_swahili_front_grammar_hints_v1';
 const LEGACY_FRONT_POS_VISIBILITY_STORAGE_KEY = 'sakusaku_swahili_front_pos_visible_v1';
@@ -1459,6 +1650,7 @@ const DISPLAY_ORDERS = {
   asc: 'A→Z',
   desc: 'Z→A'
 };
+const SETTINGS_PAGE_ORDER = ['category', 'learn', 'test', 'audio', 'record'];
 const OTHER_CATEGORY_IDS = new Set([
   'daily_tanzania_nane_nane',
   'daily_kenya_independence_day',
@@ -1825,6 +2017,8 @@ const PROPER_NOUN_CARD_IDS = new Set([
 let currentCategory = localStorage.getItem(CATEGORY_STORAGE_KEY) || 'all';
 if (!CATEGORIES[currentCategory]) currentCategory = 'all';
 let currentDisplayOrder = localStorage.getItem(DISPLAY_ORDER_STORAGE_KEY) || 'random';
+let currentSettingsPage = localStorage.getItem(SETTINGS_PAGE_STORAGE_KEY) || 'category';
+if (!SETTINGS_PAGE_ORDER.includes(currentSettingsPage)) currentSettingsPage = 'category';
 let currentStudyScope = STUDY_SCOPES[localStorage.getItem(STUDY_SCOPE_STORAGE_KEY)] ? localStorage.getItem(STUDY_SCOPE_STORAGE_KEY) : 'all';
 if (!DISPLAY_ORDERS[currentDisplayOrder]) currentDisplayOrder = 'random';
 let currentTestChoiceCount = Number(localStorage.getItem(TEST_CHOICE_COUNT_STORAGE_KEY)) || 3;
@@ -1843,6 +2037,7 @@ let testIndex = 0;
 let testCorrect = 0;
 let testAnswered = false;
 let currentTestChoices = [];
+let testSessionKind = 'normal';
 
 function loadData() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
@@ -2104,11 +2299,43 @@ const MASTERY_BADGES = [
   { count: 400, icon: '🦏', label: '400語習得' },
   { count: PHRASES.length, icon: '🐘', label: '全語習得' }
 ];
+const CORRECT_STREAK_BADGES = [
+  { count: 5, icon: '🎯', label: '5連続正解' },
+  { count: 10, icon: '🔥', label: '10連続正解' },
+  { count: 20, icon: '⚡', label: '20連続正解' },
+  { count: 50, icon: '💎', label: '50連続正解' },
+  { count: 100, icon: '👑', label: '100連続正解' }
+];
+const PERFECT_ROUND_BADGES = [
+  { count: 1, icon: '⭐', label: '初満点' },
+  { count: 3, icon: '🌟', label: '満点3回' },
+  { count: 5, icon: '🏅', label: '満点5回' },
+  { count: 10, icon: '🏆', label: '満点10回' },
+  { count: 20, icon: '🚀', label: '満点20回' }
+];
+const STREAK_MILESTONE_MESSAGES = {
+  3: '3連続正解。リズムが出てきました。',
+  5: '5連続正解。いい流れです。',
+  10: '10連続正解。かなり安定しています。',
+  20: '20連続正解。集中が続いています。',
+  50: '50連続正解。大きな記録です。',
+  100: '100連続正解。相当強いです。'
+};
 function loadMeta() {
   try { return JSON.parse(localStorage.getItem(META_STORAGE_KEY)) || {}; }
   catch (err) { return {}; }
 }
 function saveMeta(meta) { localStorage.setItem(META_STORAGE_KEY, JSON.stringify(meta)); }
+function normalizeMeta(meta = loadMeta()) {
+  return {
+    ...meta,
+    badges: meta.badges && typeof meta.badges === 'object' ? meta.badges : {},
+    correctStreak: Number(meta.correctStreak) || 0,
+    bestCorrectStreak: Number(meta.bestCorrectStreak) || 0,
+    perfectRounds: Number(meta.perfectRounds) || 0,
+    bestRoundCorrect: Number(meta.bestRoundCorrect) || 0
+  };
+}
 function getDateKey(date = new Date()) {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -2142,9 +2369,67 @@ function getMasteredCountAll() {
   const data = loadData();
   return PHRASES.filter(item => data[getCardKey(item)]?.mastered).length;
 }
+function recordCorrectAnswerStreak(isCorrect) {
+  const meta = normalizeMeta();
+  if (isCorrect) {
+    meta.correctStreak += 1;
+    meta.bestCorrectStreak = Math.max(meta.bestCorrectStreak, meta.correctStreak);
+  } else {
+    meta.correctStreak = 0;
+  }
+  saveMeta(meta);
+  return meta;
+}
+function recordPerfectRound(roundSize) {
+  const meta = normalizeMeta();
+  meta.perfectRounds += 1;
+  meta.bestRoundCorrect = Math.max(meta.bestRoundCorrect, Number(roundSize) || 0);
+  saveMeta(meta);
+  return meta;
+}
+function getStreakMilestoneMessage(count) {
+  if (STREAK_MILESTONE_MESSAGES[count]) return STREAK_MILESTONE_MESSAGES[count];
+  if (count > 100 && count % 50 === 0) return `${count}連続正解。記録更新中です。`;
+  return '';
+}
+function getCorrectFeedbackMessage(correct, meta) {
+  if (!correct) return '';
+  const count = Number(meta.correctStreak) || 0;
+  const milestone = getStreakMilestoneMessage(count);
+  if (milestone) return milestone;
+  if (count >= 5) return `正解！ ${count}連続。いい流れ。`;
+  if (count >= 2) return `正解！ ${count}連続。`;
+  return '正解です！';
+}
+function getGrowthBadge(meta = normalizeMeta()) {
+  const today = getTodayReviewCount();
+  const missCount = getMissedReviewCards().length;
+  if (meta.correctStreak >= 10) {
+    return { title: '連続正解ランナー', message: `${meta.correctStreak}連続正解中。次の1問も落ち着いて。` };
+  }
+  if (meta.perfectRounds >= 3) {
+    return { title: '満点キーパー', message: `満点${meta.perfectRounds}回。短いテストを安定して取れています。` };
+  }
+  if (getStreakDays() >= 3) {
+    return { title: '継続中', message: `${getStreakDays()}日連続。少しずつ積み上がっています。` };
+  }
+  if (missCount > 0) {
+    return { title: '回収チャンス', message: `ミス復習に${missCount}カード。ここを消すと力になります。` };
+  }
+  if (today > 0) {
+    return { title: '今日の一歩', message: `今日は${today}カード確認済み。もう1セットいけます。` };
+  }
+  return { title: 'ウォームアップ', message: 'まずは短く1セット。続けるほど記録が残ります。' };
+}
+function updateGrowthBadge(meta = normalizeMeta()) {
+  const badge = getGrowthBadge(meta);
+  const title = document.getElementById('growth-title');
+  const message = document.getElementById('growth-message');
+  if (title) title.textContent = badge.title;
+  if (message) message.textContent = badge.message;
+}
 function checkAndAwardBadges() {
-  const meta = loadMeta();
-  meta.badges = meta.badges || {};
+  const meta = normalizeMeta();
   const streak = getStreakDays();
   const mastered = getMasteredCountAll();
   const newly = [];
@@ -2155,6 +2440,14 @@ function checkAndAwardBadges() {
   MASTERY_BADGES.forEach(b => {
     const key = `mastery_${b.count}`;
     if (mastered >= b.count && !meta.badges[key]) { meta.badges[key] = Date.now(); newly.push(b); }
+  });
+  CORRECT_STREAK_BADGES.forEach(b => {
+    const key = `correct_${b.count}`;
+    if (meta.bestCorrectStreak >= b.count && !meta.badges[key]) { meta.badges[key] = Date.now(); newly.push(b); }
+  });
+  PERFECT_ROUND_BADGES.forEach(b => {
+    const key = `perfect_${b.count}`;
+    if (meta.perfectRounds >= b.count && !meta.badges[key]) { meta.badges[key] = Date.now(); newly.push(b); }
   });
   if (newly.length) {
     saveMeta(meta);
@@ -2170,10 +2463,14 @@ function showBadgeToast(badge) {
   showBadgeToast._timer = setTimeout(() => el.classList.remove('show'), 2600);
 }
 function buildBadgesPanel() {
-  const badges = loadMeta().badges || {};
+  const meta = normalizeMeta();
+  const badges = meta.badges || {};
   document.getElementById('record-today').textContent = getTodayReviewCount();
   document.getElementById('record-streak').textContent = getStreakDays();
   document.getElementById('record-mastered').textContent = getMasteredCountAll();
+  document.getElementById('record-correct-streak').textContent = meta.correctStreak;
+  document.getElementById('record-perfect-rounds').textContent = meta.perfectRounds;
+  updateGrowthBadge(meta);
   const grid = document.getElementById('badges-grid');
   grid.innerHTML = '';
   const render = (list, prefix, keyField) => list.forEach(b => {
@@ -2185,6 +2482,8 @@ function buildBadgesPanel() {
   });
   render(STREAK_BADGES, 'streak_', 'days');
   render(MASTERY_BADGES, 'mastery_', 'count');
+  render(CORRECT_STREAK_BADGES, 'correct_', 'count');
+  render(PERFECT_ROUND_BADGES, 'perfect_', 'count');
 }
 function normalizeReviewQuality(q) {
   if (q === true) return 4;
@@ -2250,9 +2549,111 @@ function getDueCards() {
   const now = Date.now();
   return getPhrasesByCategory().filter(item => (data[getCardKey(item)] || { nextDate: 0 }).nextDate <= now);
 }
+function loadMissedReviewKeys() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(MISSED_REVIEW_STORAGE_KEY)) || [];
+    return Array.isArray(parsed) ? [...new Set(parsed.map(String))] : [];
+  } catch {
+    return [];
+  }
+}
+function saveMissedReviewKeys(keys) {
+  localStorage.setItem(MISSED_REVIEW_STORAGE_KEY, JSON.stringify([...new Set(keys.map(String))]));
+}
+function getPhraseByCardKey(key) {
+  return PHRASES.find(item => getCardKey(item) === key);
+}
+function getMissedReviewCards() {
+  const keys = loadMissedReviewKeys();
+  const validKeys = [];
+  const cards = [];
+  keys.forEach(key => {
+    const card = getPhraseByCardKey(key);
+    if (!card) return;
+    validKeys.push(key);
+    cards.push(card);
+  });
+  if (validKeys.length !== keys.length) saveMissedReviewKeys(validKeys);
+  return cards;
+}
+function addMissedReviewCard(item) {
+  const key = getCardKey(item);
+  const keys = loadMissedReviewKeys();
+  if (!keys.includes(key)) saveMissedReviewKeys([...keys, key]);
+}
+function clearMissedReviewCard(item) {
+  const key = getCardKey(item);
+  const keys = loadMissedReviewKeys();
+  if (!keys.includes(key)) return;
+  saveMissedReviewKeys(keys.filter(savedKey => savedKey !== key));
+}
+function updateMissReviewUi() {
+  const count = getMissedReviewCards().length;
+  const meta = normalizeMeta();
+  const recordCount = document.getElementById('record-miss-review');
+  if (recordCount) recordCount.textContent = count;
+  const correctStreakCount = document.getElementById('record-correct-streak');
+  if (correctStreakCount) correctStreakCount.textContent = meta.correctStreak;
+  const perfectRoundsCount = document.getElementById('record-perfect-rounds');
+  if (perfectRoundsCount) perfectRoundsCount.textContent = meta.perfectRounds;
+  updateGrowthBadge(meta);
+  const settingsButton = document.getElementById('settings-miss-review-btn');
+  const settingsCount = document.getElementById('settings-miss-review-count');
+  if (settingsButton) {
+    settingsButton.disabled = count === 0;
+    settingsButton.setAttribute('aria-label', count ? `ミス復習を始める。${count}カードあります。` : 'ミス復習に入っているカードはありません。');
+  }
+  if (settingsCount) settingsCount.textContent = count ? `${count}カード` : 'なし';
+  const completeButton = document.getElementById('complete-miss-review-btn');
+  if (completeButton) {
+    completeButton.disabled = count === 0;
+    completeButton.textContent = count ? `ミス復習 (${count})` : 'ミス復習なし';
+    completeButton.setAttribute('aria-label', count ? `ミス復習を始める。${count}カードあります。` : 'ミス復習に入っているカードはありません。');
+  }
+}
 function updateModeButtons() {
-  document.getElementById('learn-mode-btn').classList.toggle('active', currentMode === 'learn');
-  document.getElementById('test-mode-btn').classList.toggle('active', currentMode === 'test');
+  const settingsVisible = !document.getElementById('settings-view')?.hidden;
+  const learnButton = document.getElementById('learn-mode-btn');
+  const testButton = document.getElementById('test-mode-btn');
+  const settingsButton = document.getElementById('settings-mode-btn');
+  learnButton?.classList.toggle('active', currentMode === 'learn' && !settingsVisible);
+  testButton?.classList.toggle('active', currentMode === 'test' && !settingsVisible);
+  settingsButton?.classList.toggle('active', settingsVisible);
+  learnButton?.setAttribute('aria-current', currentMode === 'learn' && !settingsVisible ? 'page' : 'false');
+  testButton?.setAttribute('aria-current', currentMode === 'test' && !settingsVisible ? 'page' : 'false');
+  settingsButton?.setAttribute('aria-current', settingsVisible ? 'page' : 'false');
+}
+function updateSettingsPagerHeight() {
+  const pager = document.getElementById('settings-pager');
+  const activePane = document.querySelector(`.settings-pane[data-settings-page="${currentSettingsPage}"]`);
+  if (!pager || !activePane) return;
+  pager.style.height = `${activePane.offsetHeight}px`;
+}
+function setSettingsPage(page, options = {}) {
+  if (!SETTINGS_PAGE_ORDER.includes(page)) page = 'category';
+  currentSettingsPage = page;
+  if (options.persist !== false) localStorage.setItem(SETTINGS_PAGE_STORAGE_KEY, currentSettingsPage);
+  const pageIndex = SETTINGS_PAGE_ORDER.indexOf(currentSettingsPage);
+  document.getElementById('settings-track')?.style.setProperty('transform', `translateX(${-100 * pageIndex}%)`);
+  document.querySelectorAll('.settings-tab').forEach(button => {
+    const isActive = button.dataset.settingsPage === currentSettingsPage;
+    button.classList.toggle('active', isActive);
+    button.setAttribute('aria-selected', isActive ? 'true' : 'false');
+    button.tabIndex = isActive ? 0 : -1;
+  });
+  document.querySelectorAll('.settings-pane').forEach(pane => {
+    const isActive = pane.dataset.settingsPage === currentSettingsPage;
+    pane.classList.toggle('active', isActive);
+    pane.hidden = false;
+  });
+  requestAnimationFrame(updateSettingsPagerHeight);
+}
+function showAdjacentSettingsPage(delta) {
+  const currentIndex = SETTINGS_PAGE_ORDER.indexOf(currentSettingsPage);
+  const nextIndex = currentIndex + delta;
+  if (nextIndex < 0 || nextIndex >= SETTINGS_PAGE_ORDER.length) return false;
+  setSettingsPage(SETTINGS_PAGE_ORDER[nextIndex]);
+  return true;
 }
 function buildCategoryButtons() {
   const wrap = document.getElementById('category-buttons');
@@ -2305,8 +2706,9 @@ function updateStats() {
   document.getElementById('stat-streak').textContent = getStreakDays();
   document.getElementById('stat-mastered').textContent = mastered;
   document.getElementById('scope-text').textContent = currentMode === 'test'
-    ? `テスト: ${testCorrect}問正解`
+    ? `${testSessionKind === 'missReview' ? 'ミス復習' : 'テスト'}: ${testCorrect}問正解`
     : `${getScopeLabel()}${scopeSuffix} / ${active.length}${getScopeUnit()}`;
+  updateMissReviewUi();
 }
 function setCategory(category) {
   currentCategory = CATEGORIES[category] ? category : 'all';
@@ -2334,6 +2736,7 @@ function exportProgressData() {
     exportedAt: new Date().toISOString(),
     progress: loadData(),
     meta: loadMeta(),
+    missedReviewKeys: loadMissedReviewKeys(),
     settings: {
       category: localStorage.getItem(CATEGORY_STORAGE_KEY) || 'all',
       displayOrder: localStorage.getItem(DISPLAY_ORDER_STORAGE_KEY) || 'random',
@@ -2370,6 +2773,7 @@ function importProgressData(event) {
       if (!confirm(`${count}枚分の学習記録を読み込みます。今この端末にある記録は上書きされます。よろしいですか？`)) return;
       saveData(payload.progress);
       if (payload.meta && typeof payload.meta === 'object') saveMeta(payload.meta);
+      if (Array.isArray(payload.missedReviewKeys)) saveMissedReviewKeys(payload.missedReviewKeys);
       const settings = payload.settings || {};
       if (STUDY_SCOPES[settings.studyScope]) localStorage.setItem(STUDY_SCOPE_STORAGE_KEY, settings.studyScope);
       if (CATEGORIES[settings.category]) localStorage.setItem(CATEGORY_STORAGE_KEY, settings.category);
@@ -2418,19 +2822,24 @@ function showSettingsView() {
   updateStats();
   document.getElementById('learn-view').hidden = true;
   document.getElementById('settings-view').hidden = false;
+  setSettingsPage(currentSettingsPage, { persist: false });
+  updateModeButtons();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 function showLearnView() {
   document.getElementById('settings-view').hidden = true;
   document.getElementById('learn-view').hidden = false;
+  updateModeButtons();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 function restartCurrentMode() {
-  if (currentMode === 'test') startTestSession();
+  if (currentMode === 'test' && testSessionKind === 'missReview') startMissReviewSession();
+  else if (currentMode === 'test') startTestSession();
   else startSession();
 }
 function startSession() {
   currentMode = 'learn';
+  testSessionKind = 'normal';
   updateModeButtons();
   updateTestChoiceButtons();
   document.getElementById('learn-view').classList.remove('test-mode', 'test-actions-flow');
@@ -2563,26 +2972,15 @@ function getTestPriority(row) {
   if (correctRate < 0.3) return 500 + (row.seen || 0);
   return 100 + (row.seen || 0);
 }
-function startTestSession() {
+function beginTestSession(cards, kind = 'normal') {
   currentMode = 'test';
+  testSessionKind = kind;
   updateModeButtons();
   updateTestChoiceButtons();
   const learnView = document.getElementById('learn-view');
   learnView.classList.add('test-mode');
   learnView.classList.remove('test-actions-flow');
-  const data = loadData();
-  const candidates = getActivePhrases();
-  const sorted = candidates.sort((a, b) => {
-    const aKey = getCardKey(a);
-    const bKey = getCardKey(b);
-    const aRow = data[aKey] || { seen: 0, correct: 0, n: 0, ef: 2.5, interval: 1, nextDate: 0, mastered: false };
-    const bRow = data[bKey] || { seen: 0, correct: 0, n: 0, ef: 2.5, interval: 1, nextDate: 0, mastered: false };
-    const aPri = getTestPriority(aRow);
-    const bPri = getTestPriority(bRow);
-    if (aPri !== bPri) return bPri - aPri;
-    return (aRow.nextDate || 0) - (bRow.nextDate || 0);
-  });
-  testCards = shuffle(sorted).slice(0, TEST_ROUND_SIZE);
+  testCards = cards;
   testIndex = 0;
   testCorrect = 0;
   testAnswered = false;
@@ -2596,12 +2994,40 @@ function startTestSession() {
   document.getElementById('swipe-msg').style.display = 'none';
   document.getElementById('test-panel').style.display = 'block';
   if (!testCards.length) {
-    showEmptySet(currentStudyScope === 'unmastered' ? 'このカテゴリは全部習得済みです。設定の「出題範囲」を全カードに戻すとテストできます' : 'この条件のテストカードはありません');
+    showEmptySet(kind === 'missReview'
+      ? '今はミス復習に入っているカードがありません'
+      : currentStudyScope === 'unmastered' ? 'このカテゴリは全部習得済みです。設定の「出題範囲」を全カードに戻すとテストできます' : 'この条件のテストカードはありません');
     updateStats();
     return;
   }
   showTestQuestion();
   updateStats();
+}
+function startTestSession() {
+  const data = loadData();
+  const candidates = getActivePhrases();
+  const sorted = candidates.sort((a, b) => {
+    const aKey = getCardKey(a);
+    const bKey = getCardKey(b);
+    const aRow = data[aKey] || { seen: 0, correct: 0, n: 0, ef: 2.5, interval: 1, nextDate: 0, mastered: false };
+    const bRow = data[bKey] || { seen: 0, correct: 0, n: 0, ef: 2.5, interval: 1, nextDate: 0, mastered: false };
+    const aPri = getTestPriority(aRow);
+    const bPri = getTestPriority(bRow);
+    if (aPri !== bPri) return bPri - aPri;
+    return (aRow.nextDate || 0) - (bRow.nextDate || 0);
+  });
+  beginTestSession(shuffle(sorted).slice(0, TEST_ROUND_SIZE), 'normal');
+}
+function startMissReviewSession() {
+  const missedCards = getMissedReviewCards();
+  if (!missedCards.length) {
+    showBadgeToast({ message: 'ミス復習に入っているカードはありません' });
+    announceA11y('ミス復習に入っているカードはありません。');
+    updateMissReviewUi();
+    return;
+  }
+  showLearnView();
+  beginTestSession(shuffle(missedCards).slice(0, TEST_ROUND_SIZE), 'missReview');
 }
 function buildTestChoices(correctItem) {
   const active = getActivePhrases();
@@ -2726,8 +3152,14 @@ function answerTest(index, item) {
   testAnswered = true;
   const choice = currentTestChoices[index];
   const correct = Boolean(choice && choice.correct);
-  if (correct) testCorrect++;
-  if (!correct) triggerWrongAnswerCue();
+  const streakMeta = recordCorrectAnswerStreak(correct);
+  if (correct) {
+    testCorrect++;
+    clearMissedReviewCard(item);
+  } else {
+    addMissedReviewCard(item);
+    triggerWrongAnswerCue();
+  }
   clearChoiceResultTags();
   // テキストカードと文字ボタンの両方を結果表示
   document.querySelectorAll('.test-choice-card, .test-letter-btn').forEach(btn => {
@@ -2756,7 +3188,7 @@ function answerTest(index, item) {
     sessionReviewedKeys.add(key);
   }
   const feedback = document.getElementById('test-feedback');
-  feedback.textContent = correct ? '正解です！' : `もう一度考えてみましょう。正解は「${item.jp}」です。`;
+  feedback.textContent = correct ? getCorrectFeedbackMessage(correct, streakMeta) : `もう一度考えてみましょう。正解は「${item.jp}」です。`;
   feedback.classList.toggle('correct-feedback', correct);
   feedback.classList.toggle('wrong-feedback', !correct);
   announceA11y(correct ? `正解です。${item.sw} は ${item.jp} です。` : `不正解です。${item.sw} の正解は ${item.jp} です。`);
@@ -2773,9 +3205,84 @@ function showNextTestQuestion() {
   testIndex++;
   showTestQuestion();
 }
+function setCompleteAchievement(message) {
+  const element = document.getElementById('complete-achievement');
+  if (!element) return;
+  element.textContent = message || '';
+  element.classList.toggle('is-visible', Boolean(message));
+}
+function getStudyAchievementMessage({ mastered, due }) {
+  const meta = normalizeMeta();
+  const lines = [];
+  if (getStreakDays() >= 2) lines.push(`${getStreakDays()}日連続で学習中。`);
+  if (mastered > 0) lines.push(`習得 ${mastered}カード。`);
+  if (meta.bestCorrectStreak > 0) lines.push(`最高連続正解 ${meta.bestCorrectStreak}問。`);
+  if (!lines.length && due <= 0) return '今日はここまでで一区切り。';
+  return lines.join('\n');
+}
+function getTestAchievementMessage({ misses, remainingMisses, isMissReview, perfectMeta }) {
+  const meta = normalizeMeta();
+  if (testCards.length && misses === 0) {
+    const currentMeta = perfectMeta || meta;
+    return isMissReview
+      ? `ミス復習を全問回収。\n連続正解 ${currentMeta.correctStreak}問。`
+      : `満点クリア。\n満点回数 ${currentMeta.perfectRounds}回 / 最高連続正解 ${currentMeta.bestCorrectStreak}問。`;
+  }
+  if (remainingMisses > 0) return `ミス復習に${remainingMisses}カード保存。\n次はここを回収。`;
+  if (meta.bestCorrectStreak > 0) return `最高連続正解 ${meta.bestCorrectStreak}問。`;
+  return '';
+}
+function setCompleteActionMode(mode) {
+  const learnButton = document.getElementById('complete-learn-btn');
+  const repeatTestButton = document.getElementById('complete-repeat-test-btn');
+  const missReviewButton = document.getElementById('complete-miss-review-btn');
+  const settingsButton = document.getElementById('complete-settings-btn');
+  const restartButton = document.getElementById('restart-btn');
+  if (!learnButton || !repeatTestButton || !missReviewButton || !settingsButton || !restartButton) return;
+  const missCount = getMissedReviewCards().length;
+  [learnButton, repeatTestButton, missReviewButton, settingsButton].forEach(button => button.classList.remove('primary'));
+  learnButton.textContent = mode === 'study' ? '学習もう一回' : '学習で確認';
+  repeatTestButton.textContent = mode === 'study' ? 'テストへ' : mode === 'missReview' ? '通常テスト' : 'テストもう一回';
+  settingsButton.textContent = '設定';
+  if (mode === 'study') repeatTestButton.classList.add('primary');
+  else if (missCount > 0) missReviewButton.classList.add('primary');
+  else if (mode === 'missReview') learnButton.classList.add('primary');
+  else repeatTestButton.classList.add('primary');
+  restartButton.hidden = false;
+  restartButton.textContent = 'もう一度';
+  restartButton.setAttribute('aria-label', mode === 'missReview' ? 'もう一度ミス復習を始める' : mode === 'test' ? 'もう一度テストを始める' : 'もう一度学習を始める');
+  updateMissReviewUi();
+}
 function showComplete() {
   if (!sessionCards.length) return;
-  startSession();
+  document.getElementById('learn-view').classList.remove('test-actions-flow');
+  document.getElementById('session-complete').classList.remove('perfect-complete');
+  document.getElementById('study-prompt').style.display = 'none';
+  document.getElementById('card-container').style.display = 'none';
+  document.getElementById('rating-row').style.display = 'none';
+  document.getElementById('audio-btn-row').style.display = 'none';
+  document.getElementById('test-panel').style.display = 'none';
+  document.getElementById('swipe-msg').style.display = 'none';
+  document.getElementById('session-complete').style.display = 'block';
+  document.getElementById('progress-fill').style.width = '100%';
+  document.getElementById('progress-text').textContent = `${sessionCards.length} / ${sessionCards.length}`;
+  updateProgressBarA11y(100, `${sessionCards.length} / ${sessionCards.length}`);
+  const data = loadData();
+  const active = getPhrasesByCategory();
+  const mastered = active.filter(item => data[getCardKey(item)]?.mastered).length;
+  const due = getDueCards().length;
+  document.getElementById('complete-icon').textContent = '◎';
+  document.getElementById('complete-title').textContent = '今回の学習完了！';
+  document.getElementById('cs-reviewed-label').textContent = '確認';
+  document.getElementById('cs-mastered-label').textContent = '習得';
+  document.getElementById('cs-due-label').textContent = '次回候補';
+  document.getElementById('cs-reviewed').textContent = sessionCards.length;
+  document.getElementById('cs-mastered').textContent = mastered;
+  document.getElementById('cs-due').textContent = due;
+  document.getElementById('complete-msg').textContent = `「${getScopeLabel()}」${active.length}カード中 ${mastered}カードを習得しました。\n次はテストで確認するか、同じ範囲をもう一周できます。`;
+  setCompleteAchievement(getStudyAchievementMessage({ mastered, due }));
+  setCompleteActionMode('study');
+  announceA11y(`今回の学習完了。${sessionCards.length}カードを確認しました。`);
 }
 function showTestComplete() {
   document.getElementById('learn-view').classList.remove('test-actions-flow');
@@ -2790,27 +3297,47 @@ function showTestComplete() {
   document.getElementById('progress-text').textContent = `${testCards.length} / ${testCards.length}`;
   updateProgressBarA11y(100, `${testCards.length} / ${testCards.length}`);
   const misses = Math.max(0, testCards.length - testCorrect);
-  document.getElementById('complete-icon').textContent = testCards.length && misses === 0 ? '◎' : '✓';
-  document.getElementById('complete-title').textContent = misses === 0 ? '満点！テスト完了' : 'テスト完了！';
+  const remainingMisses = getMissedReviewCards().length;
+  const isMissReview = testSessionKind === 'missReview';
+  const isPerfectRound = testCards.length > 0 && misses === 0;
+  const perfectMeta = isPerfectRound && testCards.length >= Math.min(TEST_ROUND_SIZE, PHRASES.length)
+    ? recordPerfectRound(testCards.length)
+    : normalizeMeta();
+  document.getElementById('session-complete').classList.toggle('perfect-complete', isPerfectRound);
+  document.getElementById('complete-icon').textContent = isPerfectRound ? '★' : '✓';
+  document.getElementById('complete-title').textContent = isMissReview
+    ? (remainingMisses === 0 ? 'ミス復習クリア！' : 'ミス復習完了！')
+    : misses === 0 ? '満点！テスト完了' : 'テスト完了！';
   document.getElementById('cs-reviewed-label').textContent = '出題';
   document.getElementById('cs-mastered-label').textContent = '正解';
-  document.getElementById('cs-due-label').textContent = 'ミス';
+  document.getElementById('cs-due-label').textContent = isMissReview ? '残り' : 'ミス';
   document.getElementById('cs-reviewed').textContent = testCards.length;
   document.getElementById('cs-mastered').textContent = testCorrect;
-  document.getElementById('cs-due').textContent = misses;
-  document.getElementById('complete-msg').textContent = misses === 0
-    ? `全${testCards.length}問正解、満点です！\nこの調子で続けましょう。`
-    : `${testCards.length}問中 ${testCorrect}問正解！\n間違えた語は学習モードで復習しましょう。`;
+  document.getElementById('cs-due').textContent = isMissReview ? remainingMisses : misses;
+  document.getElementById('complete-msg').textContent = isMissReview
+    ? remainingMisses === 0
+      ? `ミス復習リストは空になりました。\n通常テストか学習で続けられます。`
+      : `${testCards.length}問中 ${testCorrect}問正解。\n残り${remainingMisses}カードをもう一度回収できます。`
+    : misses === 0
+      ? `全${testCards.length}問正解、満点です！\nこの調子で続けましょう。`
+      : `${testCards.length}問中 ${testCorrect}問正解！\n間違えた${remainingMisses}カードはミス復習に保存しました。`;
+  setCompleteAchievement(getTestAchievementMessage({ misses, remainingMisses, isMissReview, perfectMeta }));
+  setCompleteActionMode(isMissReview ? 'missReview' : 'test');
+  checkAndAwardBadges();
   announceA11y(`${document.getElementById('complete-title').textContent}。${testCards.length}問中${testCorrect}問正解、ミス${misses}問です。`);
 }
 function isControlTarget(target) {
-  return Boolean(target.closest('button, a, input, select, textarea, label, [role="button"]'));
+  return Boolean(target.closest('button, a, input, select, textarea, label'));
 }
 let touchStartX = 0;
 let touchStartY = 0;
 let lastTouchTime = 0;
 let touchStartedOnControl = false;
+let settingsTouchStartX = 0;
+let settingsTouchStartY = 0;
+let settingsSwipeActive = false;
 const learnViewEl = document.getElementById('learn-view');
+const settingsViewEl = document.getElementById('settings-view');
 learnViewEl.addEventListener('click', event => {
   if (currentMode !== 'learn') return;
   if (isControlTarget(event.target)) return;
@@ -2841,8 +3368,56 @@ learnViewEl.addEventListener('touchend', event => {
     dx > 0 ? rate(3) : showPreviousCard();
   }
 }, { passive: true });
+if (settingsViewEl) {
+  settingsViewEl.addEventListener('touchstart', event => {
+    if (settingsViewEl.hidden) return;
+    settingsTouchStartX = event.changedTouches[0].clientX;
+    settingsTouchStartY = event.changedTouches[0].clientY;
+    settingsSwipeActive = false;
+  }, { passive: true });
+  settingsViewEl.addEventListener('touchmove', event => {
+    if (settingsViewEl.hidden) return;
+    const dx = event.changedTouches[0].clientX - settingsTouchStartX;
+    const dy = event.changedTouches[0].clientY - settingsTouchStartY;
+    if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 1.15) {
+      settingsSwipeActive = true;
+      event.preventDefault();
+    }
+  }, { passive: false });
+  settingsViewEl.addEventListener('touchend', event => {
+    if (settingsViewEl.hidden) return;
+    const dx = event.changedTouches[0].clientX - settingsTouchStartX;
+    const dy = event.changedTouches[0].clientY - settingsTouchStartY;
+    if ((settingsSwipeActive || Math.abs(dx) > 42) && Math.abs(dx) > Math.abs(dy)) {
+      event.preventDefault();
+      showAdjacentSettingsPage(dx < 0 ? 1 : -1);
+    }
+    settingsSwipeActive = false;
+  }, { passive: false });
+}
 document.addEventListener('keydown', event => {
   const fromControl = isControlTarget(event.target);
+  const settingsOpen = !document.getElementById('settings-view')?.hidden;
+  if (settingsOpen) {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      showLearnView();
+      return;
+    }
+    if (!fromControl || event.target.classList.contains('settings-tab')) {
+      if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        showAdjacentSettingsPage(1);
+        return;
+      }
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        showAdjacentSettingsPage(-1);
+        return;
+      }
+    }
+    return;
+  }
   if (currentMode === 'test') {
     if (!fromControl && /^[1-4]$/.test(event.key)) {
       const index = Number(event.key) - 1;
@@ -2853,19 +3428,26 @@ document.addEventListener('keydown', event => {
       }
       return;
     }
-    if (event.key === 'Enter' && testAnswered) {
+    if ((event.key === 'Enter' || event.key === 'ArrowRight') && testAnswered) {
       event.preventDefault();
       showNextTestQuestion();
     }
     return;
   }
   if (fromControl) return;
+  if (event.key.toLowerCase() === 't') { event.preventDefault(); startTestSession(); return; }
+  if (event.key.toLowerCase() === 's') { event.preventDefault(); showSettingsView(); return; }
   if (event.key === ' ' || event.key === 'Enter' || event.key === 'ArrowUp') { event.preventDefault(); flipCard(); }
-  if (event.key === 'ArrowRight') { event.preventDefault(); rate(3); }
+  if (event.key === 'ArrowRight') { event.preventDefault(); rate(isFlipped ? 5 : 3); }
   if (event.key === 'ArrowLeft') { event.preventDefault(); showPreviousCard(); }
+  if (!isFlipped) return;
+  if (event.key === '1') { event.preventDefault(); rate(0); }
+  if (event.key === '2') { event.preventDefault(); rate(3); }
+  if (event.key === '3') { event.preventDefault(); rate(5); }
 });
 window.addEventListener('resize', () => {
   if (currentMode === 'test') syncTestActionLayout();
+  updateSettingsPagerHeight();
 });
 migrateProgressData();
 if (speechSupported) {
