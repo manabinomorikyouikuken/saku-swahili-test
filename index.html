@@ -2761,7 +2761,9 @@ function answerTest(index, item) {
   feedback.classList.toggle('wrong-feedback', !correct);
   announceA11y(correct ? `正解です。${item.sw} は ${item.jp} です。` : `不正解です。${item.sw} の正解は ${item.jp} です。`);
   document.getElementById('test-letter-row').style.display = 'none';
-  document.getElementById('test-next-btn').style.display = 'block';
+  const nextButton = document.getElementById('test-next-btn');
+  nextButton.style.display = 'block';
+  requestAnimationFrame(() => nextButton.focus({ preventScroll: true }));
   syncTestActionLayout();
   updateProgressBarA11y(((testIndex + 1) / testCards.length) * 100, `${testIndex + 1} / ${testCards.length}`);
   updateStats();
